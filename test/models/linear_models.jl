@@ -3,7 +3,7 @@
     # with intercept = 0.0
     n = 1000
     rng = StableRNG(1234)
-    X, y = MLJBase.make_regression(n, 3, noise=0, intercept=false, as_table=false, rng=rng)
+    X, y = MLJBase.make_regression(n, 3, noise=0, intercept=false, rng=rng)
     # Train model with intercept on all data
     linear = LinearRegressor()
     yhat, fr = test_regression(linear, X, y)
@@ -11,6 +11,7 @@
     @test norm(yhat - y)/sqrt(n) < 1e-12
     # Get the true intercept?
     @test abs(fr.intercept) < 1e-10
+    # Check metadata
     d = info_dict(linear)
     @test d[:input_scitype] == Table(Continuous)
     @test d[:target_scitype] == Union{Table(Continuous), AbstractVector{Continuous}}
@@ -23,14 +24,17 @@ end
     n = 1000
     rng = StableRNG(1234)
     X, Y = make_regression2(n, 3, noise=0, intercept=false, rng=rng)
+    Y_mat = MLJBase.matrix(Y)
     # Train model on all data
     linear = LinearRegressor()
-    Yhat_, fr = test_regression(linear, X, Y)
-    Yhat = MLJBase.matrix(Yhat_)
+    Yhat, fr = test_regression(linear, X, Y)
+    Yhat_mat = MLJBase.matrix(Yhat)
+    # Check if the column names is same after predict 
+    MLJBase.schema(Yhat).names == MLJBase.schema(Y).names
     # Training error
-    @test norm(Yhat - Y)/sqrt(n) < 1e-12
+    @test norm(Yhat_mat - Y_mat)/sqrt(n) < 1e-12
     # Get the true intercept?
-    @test norm(fr.intercept .- zeros(size(Y, 2))) < 1e-10
+    @test norm(fr.intercept .- zeros(size(Y_mat, 2))) < 1e-10
 end
 
 @testset "Single-response Ridge" begin
@@ -38,7 +42,7 @@ end
     # with intercept = 0.0
     n = 1000
     rng = StableRNG(1234)
-    X, y = MLJBase.make_regression(n, 3, noise=0, intercept=false, as_table=false, rng=rng)
+    X, y = MLJBase.make_regression(n, 3, noise=0, intercept=false, rng=rng)
     # Train model with intercept on all data with no regularization
     # and no standardization of target.
     ridge = RidgeRegressor(lambda=0.0)
@@ -47,6 +51,7 @@ end
     @test norm(yhat - y)/sqrt(n) < 1e-12
     # Get the true intercept?
     @test abs(fr.intercept) < 1e-10
+    # Check metadata
     d = info_dict(ridge)
     @test d[:input_scitype] == Table(Continuous)
     @test d[:target_scitype] == Union{Table(Continuous), AbstractVector{Continuous}}
@@ -59,13 +64,16 @@ end
     n = 1000
     rng = StableRNG(1234)
     X, Y = make_regression2(n, 3, noise=0, intercept=false, rng=rng)
+    Y_mat = MLJBase.matrix(Y)
     # Train model with intercept on all data with no regularization 
     # and no standardization of target.
     ridge = RidgeRegressor(lambda=0.0)
-    Yhat_, fr = test_regression(ridge, X, Y)
-    Yhat = MLJBase.matrix(Yhat_)
+    Yhat, fr = test_regression(ridge, X, Y)
+    Yhat_mat = MLJBase.matrix(Yhat)
+    # Check if the column names is same after predict 
+    MLJBase.schema(Yhat).names == MLJBase.schema(Y).names
     # Training error
-    @test norm(Yhat - Y)/sqrt(n) < 1e-12
+    @test norm(Yhat_mat - Y_mat)/sqrt(n) < 1e-12
     # Get the true intercept?
-    @test norm(fr.intercept .- zeros(size(Y, 2))) < 1e-10
+    @test norm(fr.intercept .- zeros(size(Y_mat, 2))) < 1e-10
 end

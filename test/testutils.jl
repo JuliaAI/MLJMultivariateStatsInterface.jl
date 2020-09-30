@@ -9,7 +9,7 @@ function make_regression2(n=100, p=3, c=5;intercept=true, noise=0.1, rng=nothing
     X = MLJBase.augment_X(randn(rng, n, p), intercept)
     A = randn(rng, p + Int(intercept), c)
     Y = (X * A) .+ (noise .* randn(rng, n, c))
-    return X, Y
+    return MLJBase.table(X), MLJBase.table(Y, names=[Symbol("y$(i)") for i = 1:c])
 end
 
 function test_regression(model, X, y)
@@ -25,8 +25,11 @@ function test_composition_model(ms_model, mlj_model, X, X_array)
         MultivariateStats.transform(ms_model, permutedims(X_array))
     )  
     fitresult, _, _ = fit(mlj_model, 1, X)
-    Xtr_mlj = matrix(transform(mlj_model, fitresult, X))
+    Xtr_mlj_table = transform(mlj_model, fitresult, X)
+    Xtr_mlj = matrix(Xtr_mlj_table)
+    # Compare MLJ and MultivariateStats transformed matrices
     @test Xtr_mlj ≈ Xtr_ms
+    # test metadata
     d = info_dict(mlj_model_type)
     @test d[:input_scitype] == Table(Continuous)
     @test d[:output_scitype] == Table(Continuous)
