@@ -8,6 +8,8 @@ using MLJMultivariateStatsInterface
 using StableRNGs
 using Test
 
+const MS = MultivariateStats
+
 include("testutils.jl")
 println("\nutils"); include("utils.jl")
 println("\ncomponent_analysis"); include("models/decomposition_models.jl")
