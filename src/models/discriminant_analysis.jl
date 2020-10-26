@@ -67,6 +67,24 @@ function MMI.fit(model::LDA, ::Int, X, y)
     return fitresult, cache, report
 end
 
+
+"""
+  _replace!(y::AbstractVector, z::AbstractVector:, r::AbstractRange)
+  
+  internal method essentially the same as
+  Base.replace!(y, (z .=> r)...)
+  but more efficient
+"""
+function _replace!(y::AbstractVector, z::AbstractVector, r::AbstractRange)
+    length(r) == length(z) || 
+     throw(ArgumentError("`z` and `r` has to be of the same length"))
+    @inbounds for i in eachindex(y)
+        for j in eachindex(z) 
+            isequal(z[j], y[i]) && (y[i] = r[j])
+        end
+    end
+end
+
 function _check_lda_data(model, X, y)
     class_list = MMI.classes(y[1]) # Class list containing entries in pool of y.
     nclasses = length(class_list)
@@ -79,7 +97,7 @@ function _check_lda_data(model, X, y)
     yplain = MMI.int(y) # Vector of n ints in {1,..., nclasses}.
     p, n = size(Xm_t)
     # Recode yplain to be in {1,..., nc}
-    nc == nclasses || replace!(yplain, (integers_seen .=> 1:nc)...)
+    nc == nclasses || _replace!(yplain, integers_seen, 1:nc) 
     # Check to make sure we have more than one class in training sample.
     # This is to prevent Sb from being a zero matrix.
     if nc <= 1
@@ -90,7 +108,6 @@ function _check_lda_data(model, X, y)
             )
         )
     end
-
     # Check to make sure we have more samples than classes.
     # This is to prevent Sw from being the zero matrix.
     if n <= nc
@@ -134,7 +151,7 @@ function MMI.predict(m::LDA, (core_res, classes_seen), Xnew)
     # compute the distances in the transformed space between pairs of rows
     # the probability matrix Pr is `n x nc` and normalised accross rows
     Pr = pairwise(m.dist, XWt, centroids, dims=1)
-    Pr .= Pr .* -1
+    Pr .*= -1
     # apply a softmax transformation
     softmax!(Pr)
     return MMI.UnivariateFinite(classes_seen, Pr)
@@ -239,14 +256,18 @@ function _matrix_transpose(model::Union{LDA, BayesianLDA}, X)
     return MMI.matrix(X; transpose=true)
 end
 
-function _check_lda_priors(priors, nc, nclasses, integers_seen)
+@inline function _check_lda_priors(priors, nc, nclasses, integers_seen)
     if length(priors) != nclasses
         throw(ArgumentError("Invalid size of `priors`."))
-    end 
+    end
+     
+    # `priors` is esssentially always an instance of type `Vector{Float64}`.
+    # The next two conditions implicitly checks that
+    # ` 0 .<= priors .<= 1` and `sum(priors) ≈ 1` are true.
     if !isapprox(sum(priors), 1)
         throw(ArgumentError("probabilities specified in `priors` must sum to 1"))
     end
-    if any(model.priors .< 0)
+    if all(>=(0), priors) 
         throw(ArgumentError("probabilities specified in `priors` must non-negative"))
     end
     # Select priors for unique classes in `y` (For resampling purporses).
@@ -254,11 +275,14 @@ function _check_lda_priors(priors, nc, nclasses, integers_seen)
     return priors_
 end
 
+_get_priors(priors::SubArray) = copy(priors)
+_get_priors(priors) = priors
+
 function MMI.fitted_params(::BayesianLDA, (core_res, classes_seen, priors, n))
    return (
        projected_class_means=MS.classmeans(core_res),
        projection_matrix=MS.projection(core_res),
-       priors=priors
+       priors=_get_priors(priors)
     )
 end
 
@@ -278,17 +302,17 @@ function MMI.predict(m::BayesianLDA, (core_res, classes_seen, priors, n), Xnew)
     # with (Pᵀxᵢ −  Pᵀµₖ)ᵀ(Pᵀxᵢ −  Pᵀµₖ) being the SquaredEquclidean distance between
     # pairs of rows in the transformed space
     Pr = pairwise(SqEuclidean(), XWt, centroids, dims=1)
-    Pr .*= (-0.5*n)
-    Pr .+= log.(priors)'
+    Pr .*= (-n/2)
+    Pr .+= log.(transpose(priors))
 
     # apply a softmax transformation to convert Pr to a probability matrix
     softmax!(Pr)
     return MMI.UnivariateFinite(classes_seen, Pr)
 end
 
-function MMI.transform(m::T, (core_res,), X) where T<:Union{LDA, BayesianLDA}
+function MMI.transform(m::T, (core_res, ), X) where T<:Union{LDA, BayesianLDA}
     # projection of X, XWt is nt x o  where o = out dims
-    proj = core_res.projw * core_res.projLDA #proj is the projection_matrix
+    proj = core_res.proj #proj is the projection_matrix
     XWt = MMI.matrix(X) * proj
     return MMI.table(XWt, prototype = X)
 end
@@ -374,7 +398,7 @@ function MMI.predict(m::SubspaceLDA, (core_res, out_dim, classes_seen), Xnew)
     # compute the distances in the transformed space between pairs of rows
     # the probability matrix is `nt x nc` and normalised accross rows
     Pr = pairwise(m.dist, XWt, centroids, dims=1)
-    Pr .= Pr .* -1
+    Pr .*= -1
     # apply a softmax transformation
     softmax!(Pr)
     return MMI.UnivariateFinite(classes_seen, Pr)
@@ -461,13 +485,13 @@ end
 
 function _matrix_transpose(model::Union{SubspaceLDA, BayesianSubspaceLDA}, X)
     return transpose(MMI.matrix(X))
-end 
-
+end
+ 
 function MMI.fitted_params(::BayesianSubspaceLDA, (core_res, _, _, priors,_))
     return (
         projected_class_means=MS.classmeans(core_res),
         projection_matrix=MS.projection(core_res),
-        priors=priors
+        priors=_get_priors(priors)
     )
 end
 
@@ -496,8 +520,8 @@ function MMI.predict(
     # (Pᵀxᵢ −  Pᵀµₖ)ᵀ(Pᵀxᵢ −  Pᵀµₖ) is the SquaredEquclidean distance in the 
     # transformed space  
     Pr = pairwise(SqEuclidean(), XWt, centroids, dims=1)
-    Pr .*= (-0.5 * (n-nc)/mult)
-    Pr .+= log.(priors)'
+    Pr .*= (-(n-nc)/2mult)
+    Pr .+= log.(transpose(priors))
 
     # apply a softmax transformation to convert Pr to a probability matrix
     softmax!(Pr)
