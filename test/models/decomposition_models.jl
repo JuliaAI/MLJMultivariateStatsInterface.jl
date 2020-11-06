@@ -18,10 +18,11 @@ end
     X_array = matrix(X)
     # MultivariateStats KernelPCA
     kpca_ms = MultivariateStats.fit(
-        MultivariateStats.KernelPCA, permutedims(X_array)
+        MultivariateStats.KernelPCA, permutedims(X_array),
+        inverse=true
     )
     # MLJ KernelPCA
-    kpca_mlj = KernelPCA()
+    kpca_mlj = KernelPCA(inverse=true)
     test_composition_model(kpca_ms, kpca_mlj, X, X_array)
 end
 
@@ -46,7 +47,7 @@ end
         k=k,
         tol=tolerance,
         winit=randn(rng, eltype(X_array), size(X_array, 2), k))
-    test_composition_model(ica_ms, ica_mlj, X, X_array)
+    test_composition_model(ica_ms, ica_mlj, X, X_array, test_inverse=false)
 end
 
 @testset "PPCA" begin

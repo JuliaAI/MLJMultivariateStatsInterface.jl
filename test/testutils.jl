@@ -19,7 +19,7 @@ function test_regression(model, X, y)
     return yhat, fr
 end
 
-function test_composition_model(ms_model, mlj_model, X, X_array)
+function test_composition_model(ms_model, mlj_model, X, X_array ; test_inverse=true)
     mlj_model_type = typeof(mlj_model)
     Xtr_ms = permutedims(
         MultivariateStats.transform(ms_model, permutedims(X_array))
@@ -34,4 +34,13 @@ function test_composition_model(ms_model, mlj_model, X, X_array)
     @test d[:input_scitype] == Table(Continuous)
     @test d[:output_scitype] == Table(Continuous)
     @test d[:name] == string(mlj_model_type)
+
+    if test_inverse
+        Xinv_ms = permutedims(
+            MultivariateStats.reconstruct(ms_model, permutedims(Xtr_ms))
+        )
+        Xinv_mlj_table = inverse_transform(mlj_model, fitresult, Xtr_mlj)
+        Xinv_mlj = matrix(Xinv_mlj_table)
+        @test Xinv_ms ≈ Xinv_mlj
+    end
 end
