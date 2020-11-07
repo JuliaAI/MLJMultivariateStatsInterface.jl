@@ -350,7 +350,7 @@ for (M, MFitResultType) in model_types
         return MMI.table(Xnew, prototype=X)
     end
 
-    if hasmethod(MS.reconstruct, Tuple{MFitResultType{T}, Matrix{T}} where {T<:Real})
+    if hasmethod(MS.reconstruct, Tuple{MFitResultType{Float64}, Matrix{Float64}})
         @eval function MMI.inverse_transform(::$M, fr::$MFitResultType, Y)
             # X is n x p, need to transpose twice
             Yarray = MMI.matrix(Y)
