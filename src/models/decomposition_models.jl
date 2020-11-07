@@ -339,8 +339,6 @@ model_types = [
 ]
 
 for (M, MFitResultType) in model_types
-    println("Defining methods for $M")
-
     @eval function MMI.fitted_params(::$M, fr)
         return (projection=copy(MS.projection(fr)),)
     end
@@ -352,8 +350,7 @@ for (M, MFitResultType) in model_types
         return MMI.table(Xnew, prototype=X)
     end
 
-    if hasmethod(MS.reconstruct, Tuple{MFitResultType{Float64}, Matrix{Float64}})
-        println("$M has inverse !")
+    if hasmethod(MS.reconstruct, Tuple{MFitResultType{T}, Matrix{T}} where {T<:Real})
         @eval function MMI.inverse_transform(::$M, fr::$MFitResultType, Y)
             # X is n x p, need to transpose twice
             Yarray = MMI.matrix(Y)
