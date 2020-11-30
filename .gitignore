@@ -6,5 +6,6 @@
 .#*
 *.bu
 .DS_Store
+.vscode
 sandbox/
 docs/build

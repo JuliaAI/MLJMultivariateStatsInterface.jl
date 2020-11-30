@@ -55,17 +55,6 @@ function MMI.fit(model::PCA, verbosity::Int, X)
     return fitresult, cache, report
 end
 
-function MMI.fitted_params(::PCA, fr)
-    return (projection=copy(MS.projection(fr)),)
-end
-
-function MMI.transform(::PCA, fr::PCAFitResultType, X)
-    # X is n x d, need to transpose twice...
-    Xarray = MMI.matrix(X)
-    Xnew = transpose(MS.transform(fr, transpose(Xarray)))
-    return MMI.table(Xnew, prototype=X)
-end
-
 metadata_model(PCA,
     input=Table(Continuous),
     output=Table(Continuous),
@@ -129,17 +118,6 @@ function MMI.fit(model::KernelPCA, verbosity::Int, X)
         principalvars=copy(MS.principalvars(fitresult))
     )
     return fitresult, cache, report
-end
-
-function MMI.fitted_params(::KernelPCA, fr)
-    return (projection=copy(MS.projection(fr)),)
-end
-
-function MMI.transform(::KernelPCA, fr::KernelPCAFitResultType, X)
-    # X is n x d, need to transpose twice...
-    Xarray = MMI.matrix(X)
-    Xnew = transpose(MS.transform(fr, transpose(Xarray)))
-    return MMI.table(Xnew, prototype=X)
 end
 
 metadata_model(
@@ -213,17 +191,6 @@ function MMI.fit(model::ICA, verbosity::Int, X)
     return fitresult, cache, report
 end
 
-function MMI.fitted_params(::ICA, fr)
-    return (projection=copy(MS.projection(fr)),)
-end
-
-function MMI.transform(::ICA, fr::ICAFitResultType, X)
-    # X is n x d, need to transpose twice...
-    Xarray = MMI.matrix(X)
-    Xnew = transpose(MS.transform(fr, transpose(Xarray)))
-    return MMI.table(Xnew, prototype=X)
-end
-
 metadata_model(
     ICA,
     input=Table(Continuous),
@@ -284,17 +251,6 @@ function MMI.fit(model::PPCA, verbosity::Int, X)
         loadings=MS.loadings(fitresult)
     )
     return fitresult, cache, report
-end
-
-function MMI.fitted_params(::PPCA, fr)
-    return (projection=copy(MS.projection(fr)),)
-end
-
-function MMI.transform(::PPCA, fr::PPCAFitResultType, X)
-    # X is n x d, need to transpose twice...
-    Xarray = MMI.matrix(X)
-    Xnew   = transpose(MS.transform(fr, transpose(Xarray)))
-    return MMI.table(Xnew, prototype=X)
 end
 
 metadata_model(PPCA,
@@ -362,17 +318,6 @@ function MMI.fit(model::FactorAnalysis, verbosity::Int, X)
     return fitresult, cache, report
 end
 
-function MMI.fitted_params(::FactorAnalysis, fr)
-    return (projection=MS.projection(fr),)
-end
-
-function MMI.transform(::FactorAnalysis, fr::FactorAnalysisResultType, X)
-    # X is n x d, need to transpose twice
-    Xarray = MMI.matrix(X)
-    Xnew = transpose(MS.transform(fr, transpose(Xarray)))
-    return MMI.table(Xnew, prototype=X)
-end
-
 metadata_model(FactorAnalysis,
     input=Table(Continuous),
     output=Table(Continuous),
@@ -380,3 +325,37 @@ metadata_model(FactorAnalysis,
     descr=FactorAnalysis_DESCR,
     path="$(PKG).FactorAnalysis"
 )
+
+####
+#### Common interface
+####
+
+model_types = [
+    (PCA, PCAFitResultType),
+    (KernelPCA, KernelPCAFitResultType),
+    (ICA, ICAFitResultType),
+    (PPCA, PPCAFitResultType),
+    (FactorAnalysis, FactorAnalysisResultType)
+]
+
+for (M, MFitResultType) in model_types
+    @eval function MMI.fitted_params(::$M, fr)
+        return (projection=copy(MS.projection(fr)),)
+    end
+
+    @eval function MMI.transform(::$M, fr::$MFitResultType, X)
+        # X is n x d, need to transpose twice
+        Xarray = MMI.matrix(X)
+        Xnew = transpose(MS.transform(fr, transpose(Xarray)))
+        return MMI.table(Xnew, prototype=X)
+    end
+
+    if hasmethod(MS.reconstruct, Tuple{MFitResultType{Float64}, Matrix{Float64}})
+        @eval function MMI.inverse_transform(::$M, fr::$MFitResultType, Y)
+            # X is n x p, need to transpose twice
+            Yarray = MMI.matrix(Y)
+            Ynew = transpose(MS.reconstruct(fr, transpose(Yarray)))
+            return MMI.table(Ynew, prototype=Y)
+        end
+    end
+end
