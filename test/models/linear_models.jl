@@ -12,10 +12,6 @@
     # Get the true intercept?
     @test abs(fr.intercept) < 1e-10
     # Check metadata
-    d = info_dict(linear)
-    @test d[:input_scitype] == Table(Continuous)
-    @test d[:target_scitype] == Union{Table(Continuous), AbstractVector{Continuous}}
-    @test d[:name] == "LinearRegressor"
 end
 
 @testset "Multi-response Linear" begin
@@ -29,7 +25,7 @@ end
     linear = LinearRegressor()
     Yhat, fr = test_regression(linear, X, Y)
     Yhat_mat = MLJBase.matrix(Yhat)
-    # Check if the column names is same after predict 
+    # Check if the column names is same after predict
     MLJBase.schema(Yhat).names == MLJBase.schema(Y).names
     # Training error
     @test norm(Yhat_mat - Y_mat)/sqrt(n) < 1e-12
@@ -52,10 +48,6 @@ end
     # Get the true intercept?
     @test abs(fr.intercept) < 1e-10
     # Check metadata
-    d = info_dict(ridge)
-    @test d[:input_scitype] == Table(Continuous)
-    @test d[:target_scitype] == Union{Table(Continuous), AbstractVector{Continuous}}
-    @test d[:name] == "RidgeRegressor"
 end
 
 @testset "Multi-response Ridge" begin
@@ -65,12 +57,12 @@ end
     rng = StableRNG(1234)
     X, Y = make_regression2(n, 3, noise=0, intercept=false, rng=rng)
     Y_mat = MLJBase.matrix(Y)
-    # Train model with intercept on all data with no regularization 
+    # Train model with intercept on all data with no regularization
     # and no standardization of target.
     ridge = RidgeRegressor(lambda=0.0)
     Yhat, fr = test_regression(ridge, X, Y)
     Yhat_mat = MLJBase.matrix(Yhat)
-    # Check if the column names is same after predict 
+    # Check if the column names is same after predict
     MLJBase.schema(Yhat).names == MLJBase.schema(Y).names
     # Training error
     @test norm(Yhat_mat - Y_mat)/sqrt(n) < 1e-12

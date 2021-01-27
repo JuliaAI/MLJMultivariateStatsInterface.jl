@@ -30,10 +30,6 @@ function test_composition_model(ms_model, mlj_model, X, X_array ; test_inverse=t
     # Compare MLJ and MultivariateStats transformed matrices
     @test Xtr_mlj ≈ Xtr_ms
     # test metadata
-    d = info_dict(mlj_model_type)
-    @test d[:input_scitype] == Table(Continuous)
-    @test d[:output_scitype] == Table(Continuous)
-    @test d[:name] == string(mlj_model_type)
 
     if test_inverse
         Xinv_ms = permutedims(

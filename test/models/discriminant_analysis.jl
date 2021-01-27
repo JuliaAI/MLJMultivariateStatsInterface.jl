@@ -10,7 +10,7 @@
     ytest = selectrows(y, test)
 
     lda_model = LDA()
-    
+
     ## Check model `fit`
     fitresult, = fit(lda_model, 1, Xtrain, ytrain)
     class_means, projection_matrix = fitted_params(lda_model, fitresult)
@@ -28,10 +28,6 @@
     tlda_mlj = transform(lda_model, fitresult, X)
     @test tlda_mlj == tlda_ms
     ## Check model traits
-    d = info_dict(LDA)
-    @test d[:input_scitype] == Table(Continuous)
-    @test d[:target_scitype] == AbstractVector{<:Finite}
-    @test d[:name] == "LDA"
 end
 
 @testset "MLDA-2" begin
@@ -55,7 +51,7 @@ end
     ytrain = selectrows(y, train)
     Xtest = selectrows(X, test)
     ytest = selectrows(y, test)
-    
+
     lda_model = LDA()
     ## Check model `fit`/`predict`
     fitresult, = fit(lda_model, 1, Xtrain, ytrain)
@@ -74,7 +70,7 @@ end
     ytrain = selectrows(y, train)
     Xtest = selectrows(X, test)
     ytest = selectrows(y, test)
-    
+
     BLDA_model = BayesianLDA()
     ## Check model `fit`
     fitresult, = fit(BLDA_model, 1, Xtrain, ytrain)
@@ -85,14 +81,10 @@ end
     mce = cross_entropy(preds, ytest) |> mean
     @test 0.685 ≤ mce ≤ 0.695
     ## Check model traits
-    d = info_dict(BayesianLDA)
-    @test d[:input_scitype] == Table(Continuous)
-    @test d[:target_scitype] == AbstractVector{<:Finite}
-    @test d[:name] == "BayesianLDA"
 end
 
 @testset "BayesianSubspaceLDA" begin
-    ## Data 
+    ## Data
     X, y = @load_iris
     LDA_model = BayesianSubspaceLDA()
     ## Check model `fit`
@@ -113,27 +105,23 @@ end
         abs.(
             projection_matrix ≈ [
                 0.0675721   0.00271023;
-  			    0.127666    0.177718;
- 				-0.180211   -0.0767255;
+                            0.127666    0.177718;
+                                -0.180211   -0.0767255;
                 -0.235382    0.231435
             ]
         )
     ) < 0.05
     @test round.(prior_probabilities, sigdigits=7) == [0.3333333, 0.3333333, 0.3333333]
     @test round.(report.explained_variance_ratio, digits=4) == [0.9915, 0.0085]
-    
+
     ## Check model `predict`
     preds=predict(LDA_model, fitresult, X)
     predicted_class = predict_mode(LDA_model, fitresult, X)
     mcr = misclassification_rate(predicted_class, y)
     mce = cross_entropy(preds, y) |> mean
-    @test round.(mcr, sigdigits=1) == 0.02   
+    @test round.(mcr, sigdigits=1) == 0.02
     @test 0.04 ≤ mce ≤ 0.045
     ## Check model traits
-    d = info_dict(BayesianSubspaceLDA)
-    @test d[:input_scitype] == Table(Continuous)
-    @test d[:target_scitype] == AbstractVector{<:Finite}
-    @test d[:name] == "BayesianSubspaceLDA"
 end
 
 @testset "SubspaceLDA" begin
@@ -157,7 +145,7 @@ end
     ytrain = selectrows(y, train)
     Xtest = selectrows(X, test)
     ytest = selectrows(y, test)
-    
+
     lda_model = SubspaceLDA()
     ## Check model `fit`/ `transform`
     fitresult, = fit(lda_model, 1, Xtrain, ytrain)
@@ -174,10 +162,6 @@ end
     tlda_mlj = transform(lda_model, fitresult, X)
     @test tlda_mlj == tlda_ms
     ## Check model traits
-    d = info_dict(SubspaceLDA)
-    @test d[:input_scitype] == Table(Continuous)
-    @test d[:target_scitype] == AbstractVector{<:Finite}
-    @test d[:name] == "SubspaceLDA"
 end
 
 @testset "discriminant models checks" begin
@@ -187,7 +171,7 @@ X = (x1 =rand(4), x2 = collect(1:4))
 
 ## Note: The following test depend on the order in which they are written.
 ## Hence do not change the ordering of the tests.
- 
+
 ## Check to make sure error is thrown if we only have a single
 ## unique class during training.
 model = LDA()
@@ -199,23 +183,23 @@ y1 = y[[1,1,1,1]]
 ## than unique classes during training.
 @test_throws ArgumentError fit(model, 1, X, y)
 
-## Check to make sure error is thrown if `out_dim` exceeds the number of features in 
+## Check to make sure error is thrown if `out_dim` exceeds the number of features in
 ## sample matrix used in training.
 model = LDA(out_dim=3)
 # categorical array with same pool as y but only containing "apples" & "oranges"
-y2 = y[[1,2,1,2]] 
+y2 = y[[1,2,1,2]]
 @test_throws ArgumentError fit(model, 1, X, y2)
 
-## Check to make sure error is thrown if length(`priors`) !=  number of classes 
+## Check to make sure error is thrown if length(`priors`) !=  number of classes
 ## in common pool of target vector used in training.
 model = BayesianLDA(priors=[0.1, 0.5, 0.4])
 @test_throws ArgumentError fit(model, 1, X, y)
 
-## Check to make sure error is thrown if sum(`priors`) isn't approximately equal to 1.  
+## Check to make sure error is thrown if sum(`priors`) isn't approximately equal to 1.
 model = BayesianLDA(priors=[0.1, 0.5, 0.4, 0.2])
 @test_throws ArgumentError fit(model, 1, X, y)
 
-## Check to make sure error is thrown if `priors .< 0` or `priors .> 1`.  
+## Check to make sure error is thrown if `priors .< 0` or `priors .> 1`.
 model = BayesianLDA(priors=[-0.1, 0.0, 1.0, 0.1])
 @test_throws ArgumentError fit(model, 1, X, y)
 model = BayesianLDA(priors=[1.1, 0.0, 0.0, -0.1])
