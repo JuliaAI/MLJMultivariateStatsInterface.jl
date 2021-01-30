@@ -1,20 +1,6 @@
-####
-#### LinearRegressor
-####
-
-"""
-    LinearRegressor(; bias::Bool=true)
-
-$LINEAR_DESCR
-
-# Keyword Parameters
-
-- `bias::Bool=true`: if true includes a bias term else fits without bias term.
-"""
-@mlj_model mutable struct LinearRegressor <: MMI.Deterministic
-    bias::Bool = true
-end
-
+#######
+## Common Regressor methods
+########
 struct LinearFitresult{T, F<:Real, M<:AbstractArray{F}} <: MMI.MLJType
     sol_matrix::M
     bias::Bool
@@ -37,15 +23,6 @@ function _matrix(X, target)
     return Xmatrix, Y, _names(target)
 end
 
-function MMI.fit(model::LinearRegressor, verbosity::Int, X, y)
-    Xmatrix, y_, target_header= _matrix(X, y)
-    θ = MS.llsq(Xmatrix, y_; bias=model.bias)
-    fitresult = LinearFitresult(θ, model.bias, target_header)
-    report = NamedTuple()
-    cache = nothing
-    return fitresult, cache, report
-end
-
 function _regressor_fitted_params(fr::LinearFitresult{Nothing, <:Real, <:AbstractVector})
     return (
         coefficients=fr.sol_matrix[1:end-Int(fr.bias)],
@@ -58,10 +35,6 @@ function _regressor_fitted_params(fr::LinearFitresult{<:Vector, <:Real, <:Abstra
         coefficients=fr.sol_matrix[1:end-Int(fr.bias), :],
         intercept=fr.bias ? fr.sol_matrix[end, :] : nothing
     )
-end
-
-function MMI.fitted_params(::LinearRegressor, fr)
-    return _regressor_fitted_params(fr)
 end
 
 function _predict_regressor(
@@ -98,22 +71,58 @@ function _predict_regressor(
     end
 end
 
-function MMI.predict(::LinearRegressor, fr, Xnew)
+####
+#### LinearRegressor & MultitargetLinearRegressor
+####
+
+"""
+    LinearRegressor(; bias::Bool=true)
+
+$LinearRegressor_DESCR
+
+# Keyword Parameters
+
+- `bias::Bool=true`: if true includes a bias term else fits without bias term.
+"""
+@mlj_model mutable struct LinearRegressor <: MMI.Deterministic
+    bias::Bool = true
+end
+
+"""
+    MultitargetLinearRegressor(; bias::Bool=true)
+
+$MultitargetLinearRegressor_DESCR
+
+# Keyword Parameters
+
+- `bias::Bool=true`: if true includes a bias term else fits without bias term.
+"""
+@mlj_model mutable struct MultitargetLinearRegressor <: MMI.Deterministic
+    bias::Bool = true
+end
+
+const LINREG = Union{LinearRegressor, MultitargetLinearRegressor}
+
+function MMI.fit(model::LINREG, verbosity::Int, X, y)
+    Xmatrix, y_, target_header= _matrix(X, y)
+    θ = MS.llsq(Xmatrix, y_; bias=model.bias)
+    fitresult = LinearFitresult(θ, model.bias, target_header)
+    report = NamedTuple()
+    cache = nothing
+    return fitresult, cache, report
+end
+
+function MMI.fitted_params(::LINREG, fr)
+    return _regressor_fitted_params(fr)
+end
+
+function MMI.predict(::LINREG, fr, Xnew)
     Xmat_new = MMI.matrix(Xnew)
     return _predict_regressor(fr, Xmat_new, Xnew)
 end
 
-metadata_model(
-    LinearRegressor,
-    input=Table(Continuous),
-    target=Union{Table(Continuous), AbstractVector{Continuous}},
-    weights=false,
-    descr=LINEAR_DESCR,
-    path="$(PKG).LinearRegressor"
-)
-
 ####
-#### RidgeRegressor
+#### RidgeRegressor & MultitargetRidgeRegressor
 ####
 
 _check_typeof_lambda(x)= x isa AbstractVecOrMat || (x isa Real && x ≥ 0)
@@ -121,7 +130,7 @@ _check_typeof_lambda(x)= x isa AbstractVecOrMat || (x isa Real && x ≥ 0)
 """
     RidgeRegressor(; lambda::Union{Real, AbstractVecOrMat}=1.0, bias::Bool=true)
 
-$RIDGE_DESCR
+$RidgeRegressor_DESCR
 
 # Keyword Parameters
 
@@ -134,7 +143,25 @@ $RIDGE_DESCR
     bias::Bool = true
 end
 
-function MMI.fit(model::RidgeRegressor, verbosity::Int, X, y)
+"""
+    MultitargetRidgeRegressor(; lambda::Union{Real, AbstractVecOrMat}=1.0, bias::Bool=true)
+
+$MultitargetRidgeRegressor_DESCR
+
+# Keyword Parameters
+
+- `lambda::Union{Real, AbstractVecOrMat}=1.0`: non-negative parameter for the 
+    regularization strength.
+- `bias::Bool=true`: if true includes a bias term else fits without bias term.
+"""
+@mlj_model mutable struct MultitargetRidgeRegressor <: MMI.Deterministic
+    lambda::Union{Real, AbstractVecOrMat} = 1.0::(_check_typeof_lambda(_))
+    bias::Bool = true
+end
+
+const RIDGEREG = Union{RidgeRegressor, MultitargetRidgeRegressor}
+
+function MMI.fit(model::RIDGEREG, verbosity::Int, X, y)
     Xmatrix, y_, target_header = _matrix(X, y)
     θ = MS.ridge(Xmatrix, y_, model.lambda; bias=model.bias)
     fitresult = LinearFitresult(θ, model.bias, target_header)
@@ -143,20 +170,52 @@ function MMI.fit(model::RidgeRegressor, verbosity::Int, X, y)
     return fitresult, cache, report
 end
 
-function MMI.fitted_params(::RidgeRegressor, fr)
+function MMI.fitted_params(::RIDGEREG, fr)
     return _regressor_fitted_params(fr)
 end
 
-function MMI.predict(::RidgeRegressor, fr, Xnew)
+function MMI.predict(::RIDGEREG, fr, Xnew)
     Xmat_new = MMI.matrix(Xnew)
     return _predict_regressor(fr, Xmat_new, Xnew)
 end
 
+
+############
+### Models Metadata
+############
+metadata_model(
+    LinearRegressor,
+    input=Table(Continuous),
+    target=AbstractVector{Continuous},
+    weights=false,
+    descr=LinearRegressor_DESCR,
+    path="$(PKG).LinearRegressor"
+)
+
+metadata_model(
+    MultitargetLinearRegressor,
+    input=Table(Continuous),
+    target=Table(Continuous),
+    weights=false,
+    descr=MultitargetLinearRegressor_DESCR,
+    path="$(PKG).MultitargetLinearRegressor"
+)
+
 metadata_model(
     RidgeRegressor,
     input=Table(Continuous),
-    target=Union{Table(Continuous), AbstractVector{Continuous}},
+    target=AbstractVector{Continuous},
     weights=false,
-    descr=RIDGE_DESCR,
+    descr=RidgeRegressor_DESCR ,
     path="$(PKG).RidgeRegressor"
 )
+
+metadata_model(
+    MultitargetRidgeRegressor,
+    input=Table(Continuous),
+    target=Table(Continuous),
+    weights=false,
+    descr=MultitargetRidgeRegressor_DESCR,
+    path="$(PKG).MultitargetRidgeRegressor"
+)
+
