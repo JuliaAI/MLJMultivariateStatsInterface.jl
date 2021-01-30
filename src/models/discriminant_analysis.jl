@@ -67,24 +67,6 @@ function MMI.fit(model::LDA, ::Int, X, y)
     return fitresult, cache, report
 end
 
-
-"""
-  _replace!(y::AbstractVector, z::AbstractVector:, r::AbstractRange)
-  
-  internal method essentially the same as
-  Base.replace!(y, (z .=> r)...)
-  but more efficient
-"""
-function _replace!(y::AbstractVector, z::AbstractVector, r::AbstractRange)
-    length(r) == length(z) || 
-     throw(ArgumentError("`z` and `r` has to be of the same length"))
-    @inbounds for i in eachindex(y)
-        for j in eachindex(z) 
-            isequal(z[j], y[i]) && (y[i] = r[j])
-        end
-    end
-end
-
 function _check_lda_data(model, X, y)
     class_list = MMI.classes(y[1]) # Class list containing entries in pool of y.
     nclasses = length(class_list)
