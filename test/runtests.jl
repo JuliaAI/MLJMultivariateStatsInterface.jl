@@ -1,5 +1,6 @@
-import MultivariateStats
 import Dates
+import MLJMultivariateStatsInterface: _replace!
+import MultivariateStats
 import Random
 
 using LinearAlgebra
