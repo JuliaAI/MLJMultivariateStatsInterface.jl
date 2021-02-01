@@ -14,8 +14,7 @@ using LinearAlgebra
 
 # ===================================================================
 ## EXPORTS
-export LinearRegressor, RidgeRegressor, PCA, KernelPCA, ICA, PPCA, FactorAnalysis, LDA,
-    BayesianLDA, SubspaceLDA, BayesianSubspaceLDA
+# Models are exported automatically by `@mlj_model` macro
 
 # ===================================================================
 ## Re-EXPORTS
