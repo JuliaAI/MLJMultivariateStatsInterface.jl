@@ -123,9 +123,19 @@ include("utils.jl")
 # ===================================================================
 # List of all models interfaced
 const MODELS = (
-    LinearRegressor, RidgeRegressor, PCA, KernelPCA, ICA, LDA,
-    BayesianLDA, SubspaceLDA,
-    BayesianSubspaceLDA, FactorAnalysis, PPCA
+    LinearRegressor,
+    MultitargetLinearRegressor,
+    RidgeRegressor,
+    MultitargetRidgeRegressor,
+    PCA,
+    KernelPCA,
+    ICA,
+    LDA,
+    BayesianLDA,
+    SubspaceLDA,
+    BayesianSubspaceLDA,
+    FactorAnalysis,
+    PPCA
 )
 
 # ====================================================================
