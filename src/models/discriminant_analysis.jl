@@ -70,8 +70,8 @@ end
 function _check_lda_data(model, X, y)
     class_list = MMI.classes(y[1]) # Class list containing entries in pool of y.
     nclasses = length(class_list)
-    # Class list containing unique entries in y.
-    classes_seen = filter(in(unique(y)), class_list) 
+    # Class list containing entries in seen in y.
+    classes_seen = filter(in(y), class_list) 
     nc = length(classes_seen) # Number of classes in pool of y.
     integers_seen = MMI.int(classes_seen)
     # NOTE: copy/transpose.
