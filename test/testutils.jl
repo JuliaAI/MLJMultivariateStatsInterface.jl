@@ -22,7 +22,7 @@ end
 function test_composition_model(ms_model, mlj_model, X, X_array ; test_inverse=true)
     mlj_model_type = typeof(mlj_model)
     Xtr_ms = permutedims(
-        MultivariateStats.transform(ms_model, permutedims(X_array))
+        MultivariateStats.predict(ms_model, permutedims(X_array))
     )  
     fitresult, _, _ = fit(mlj_model, 1, X)
     Xtr_mlj_table = transform(mlj_model, fitresult, X)
