@@ -9,14 +9,14 @@ $PCA_DESCR
 
 # Keyword Parameters
 
-- `maxoutdim::Int=0`: maximum number of output dimensions, uses the smallest dimension of 
+- `maxoutdim::Int=0`: maximum number of output dimensions, uses the smallest dimension of
     training feature matrix if 0 (default).
-- `method::Symbol=:auto`: method to use to solve the problem, one of `:auto`,`:cov` 
+- `method::Symbol=:auto`: method to use to solve the problem, one of `:auto`,`:cov`
     or `:svd`
 - `pratio::Float64=0.99`: ratio of variance preserved
-- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: if set to nothing(default)  
-    centering will be computed and applied, if set to `0` no 
-    centering(assumed pre-centered), if a vector is passed, the centering is done with 
+- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: if set to nothing(default)
+    centering will be computed and applied, if set to `0` no
+    centering(assumed pre-centered), if a vector is passed, the centering is done with
     that vector.
 """
 @mlj_model mutable struct PCA <: MMI.Unsupervised
@@ -74,14 +74,14 @@ $KPCA_DESCR
 
 # Keyword Parameters
 
-- `maxoutdim::Int = 0`: maximum number of output dimensions, uses the smallest 
+- `maxoutdim::Int = 0`: maximum number of output dimensions, uses the smallest
     dimension of training feature matrix if 0 (default).
-- `kernel::Function=(x,y)->x'y`: kernel function of 2 vector arguments x and y, returns a 
+- `kernel::Function=(x,y)->x'y`: kernel function of 2 vector arguments x and y, returns a
     scalar value
-- `solver::Symbol=:auto`: solver to use for the eigenvalues, one of `:eig`(default), 
+- `solver::Symbol=:auto`: solver to use for the eigenvalues, one of `:eig`(default),
     `:eigs`
-- `inverse::Bool=false`: perform calculation for inverse transform
-- `beta::Real=1.0`: strength of the ridge regression that learns the inverse transform 
+- `inverse::Bool=true`: perform calculations needed for inverse transform
+- `beta::Real=1.0`: strength of the ridge regression that learns the inverse transform
     when inverse is true
 - `tol::Real=0.0`: Convergence tolerance for eigs solver
 - `maxiter::Int=300`: maximum number of iterations for eigs solver
@@ -90,7 +90,7 @@ $KPCA_DESCR
     maxoutdim::Int = 0::(_ ≥ 0)
     kernel::Union{Nothing, Function} = default_kernel
     solver::Symbol = :eig::(_ in (:eig, :eigs))
-    inverse::Bool = false
+    inverse::Bool = true
     beta::Real = 1.0::(_ ≥ 0.0)
     tol::Real = 1e-6::(_ ≥ 0.0)
     maxiter::Int = 300::(_ ≥ 1)
@@ -102,7 +102,7 @@ function MMI.fit(model::KernelPCA, verbosity::Int, X)
     # default max out dim if not given
     maxoutdim = model.maxoutdim == 0 ? mindim : model.maxoutdim
     fitresult = MS.fit(
-        MS.KernelPCA, 
+        MS.KernelPCA,
         permutedims(Xarray);
         kernel=model.kernel,
         maxoutdim=maxoutdim,
@@ -143,17 +143,17 @@ $ICA_DESCR
 
 - `k::Int=0`: number of independent components to recover, set automatically if `0`
 - `alg::Symbol=:fastica`: algorithm to use (only `:fastica` is supported at the moment)
-- `fun::Symbol=:tanh`: approximate neg-entropy functor, via the function 
+- `fun::Symbol=:tanh`: approximate neg-entropy functor, via the function
     `MultivariateStats.icagfun`, one of `:tanh` and `:gaus`
 - `do_whiten::Bool=true`: whether to perform pre-whitening
 - `maxiter::Int=100`: maximum number of iterations
 - `tol::Real=1e-6`: convergence tolerance for change in matrix W
-- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: mean to use, if nothing (default) 
-    centering is computed andapplied, if zero, no centering, a vector of means can 
+- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: mean to use, if nothing (default)
+    centering is computed andapplied, if zero, no centering, a vector of means can
     be passed
-- `winit::Union{Nothing,Matrix{<:Real}}=nothing`: initial guess for matrix `W` either 
-    an empty matrix (random initilization of `W`), a matrix of size `k × k` (if `do_whiten` 
-    is true), a matrix of size `m × k` otherwise. If unspecified i.e `nothing` an empty 
+- `winit::Union{Nothing,Matrix{<:Real}}=nothing`: initial guess for matrix `W` either
+    an empty matrix (random initilization of `W`), a matrix of size `k × k` (if `do_whiten`
+    is true), a matrix of size `m × k` otherwise. If unspecified i.e `nothing` an empty
     `Matrix{<:Real}` is used.
 """
 @mlj_model mutable struct ICA <: MMI.Unsupervised
@@ -216,14 +216,14 @@ $PPCA_DESCR
 
 # Keyword Parameters
 
-- `maxoutdim::Int=0`: maximum number of output dimensions, uses max(no_of_features - 1, 1) 
+- `maxoutdim::Int=0`: maximum number of output dimensions, uses max(no_of_features - 1, 1)
     if 0 (default).
 - `method::Symbol=:ml`: method to use to solve the problem, one of `:ml`, `:em`, `:bayes`.
 - `maxiter::Int=1000`: maximum number of iterations.
 - `tol::Real=1e-6`: convergence tolerance.
-- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: if set to nothing(default)  
-    centering will be computed and applied, if set to `0` no 
-    centering(assumed pre-centered), if a vector is passed, the centering is done with 
+- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: if set to nothing(default)
+    centering will be computed and applied, if set to `0` no
+    centering(assumed pre-centered), if a vector is passed, the centering is done with
     that vector.
 """
 @mlj_model mutable struct PPCA <: MMI.Unsupervised
@@ -278,14 +278,14 @@ $PPCA_DESCR
 # Keyword Parameters
 
 - `method::Symbol=:cm`: Method to use to solve the problem, one of `:ml`, `:em`, `:bayes`.
-- `maxoutdim::Int=0`: Maximum number of output dimensions, uses max(no_of_features - 1, 1) 
+- `maxoutdim::Int=0`: Maximum number of output dimensions, uses max(no_of_features - 1, 1)
     if 0 (default).
 - `maxiter::Int=1000`: Maximum number of iterations.
 - `tol::Real=1e-6`: Convergence tolerance.
 - `eta::Real=tol`: Variance lower bound
-- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: If set to nothing(default)  
-    centering will be computed and applied, if set to `0` no 
-    centering(assumed pre-centered), if a vector is passed, the centering is done with 
+- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: If set to nothing(default)
+    centering will be computed and applied, if set to `0` no
+    centering(assumed pre-centered), if a vector is passed, the centering is done with
     that vector.
 """
 @mlj_model mutable struct FactorAnalysis <: MMI.Unsupervised

@@ -22,7 +22,7 @@ end
         inverse=true
     )
     # MLJ KernelPCA
-    kpca_mlj = KernelPCA(inverse=true)
+    kpca_mlj = KernelPCA()
     test_composition_model(kpca_ms, kpca_mlj, X, X_array)
 end
 
