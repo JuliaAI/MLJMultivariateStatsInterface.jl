@@ -9,26 +9,26 @@ $LDA_DESCR
 # Keyword Parameters
 
 - `method::Symbol=:gevd`:  choice of solver, one of `:gevd` or `:whiten` methods
-- `cov_w::CovarianceEstimator`=SimpleCovariance: an estimator for the within-class 
+- `cov_w::CovarianceEstimator`=SimpleCovariance: an estimator for the within-class
     covariance (used in computing within-class scatter matrix, Sw), by default set
-    to the standard `MultivariateStats.SimpleCovariance()` but 
+    to the standard `MultivariateStats.SimpleCovariance()` but
     could be set to any robust estimator from `CovarianceEstimation.jl`.
-- `cov_b::CovarianceEstimator`=SimpleCovariance: same as `cov_w` but for the between-class 
+- `cov_b::CovarianceEstimator`=SimpleCovariance: same as `cov_w` but for the between-class
     covariance (used in computing between-class scatter matrix, Sb)
-- `out_dim::Int=0`: the output dimension, i.e dimension of the transformed space, 
+- `out_dim::Int=0`: the output dimension, i.e dimension of the transformed space,
     automatically set if 0 is given (default).
-- `regcoef::Float64=1e-6`: regularization coefficient (default value 1e-6). A positive 
-    value `regcoef * eigmax(Sw)` where `Sw` is the within-class scatter matrix, is added 
-    to the diagonal of Sw to improve numerical stability. This can be useful if using 
+- `regcoef::Float64=1e-6`: regularization coefficient (default value 1e-6). A positive
+    value `regcoef * eigmax(Sw)` where `Sw` is the within-class scatter matrix, is added
+    to the diagonal of Sw to improve numerical stability. This can be useful if using
     the standard covariance estimator.
 - `dist::SemiMetric=SqEuclidean`: the distance metric to use when performing classification
-    (to compare the distance between a new point and centroids in the transformed space), 
+    (to compare the distance between a new point and centroids in the transformed space),
     an alternative choice can be the `CosineDist`.Defaults to `SqEuclidean`
 
-See also the 
+See also the
 [package documentation](https://multivariatestatsjl.readthedocs.io/en/latest/lda.html).
-For more information about the algorithm, see the paper by Li, Zhu and Ogihara, 
-[Using Discriminant Analysis for Multi-class Classification: 
+For more information about the algorithm, see the paper by Li, Zhu and Ogihara,
+[Using Discriminant Analysis for Multi-class Classification:
 An Experimental Investigation](http://citeseerx.ist.psu.edu/viewdoc/
 download?doi=10.1.1.89.7068&rep=rep1&type=pdf).
 """
@@ -42,7 +42,7 @@ download?doi=10.1.1.89.7068&rep=rep1&type=pdf).
 end
 
 function MMI.fit(model::LDA, ::Int, X, y)
-    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim = 
+    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim =
         _check_lda_data(model, X, y)
     core_res = MS.fit(
         MS.MulticlassLDA, nc, Xm_t, Int.(yplain);
@@ -71,15 +71,14 @@ function _check_lda_data(model, X, y)
     class_list = MMI.classes(y[1]) # Class list containing entries in pool of y.
     nclasses = length(class_list)
     # Class list containing entries in seen in y.
-    classes_seen = filter(in(y), class_list) 
+    classes_seen = filter(in(y), class_list)
     nc = length(classes_seen) # Number of classes in pool of y.
     integers_seen = MMI.int(classes_seen)
-    # NOTE: copy/transpose.
     Xm_t = _matrix_transpose(model, X) # Now p x n matrix
     yplain = MMI.int(y) # Vector of n ints in {1,..., nclasses}.
     p, n = size(Xm_t)
     # Recode yplain to be in {1,..., nc}
-    nc == nclasses || _replace!(yplain, integers_seen, 1:nc) 
+    nc == nclasses || _replace!(yplain, integers_seen, 1:nc)
     # Check to make sure we have more than one class in training sample.
     # This is to prevent Sb from being a zero matrix.
     if nc <= 1
@@ -112,7 +111,7 @@ function _check_lda_data(model, X, y)
                 "where `p` is the number of features in `X`"
             )
         )
-    end 
+    end
     return Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim
 end
 
@@ -147,7 +146,7 @@ metadata_model(LDA,
     descr=LDA_DESCR,
     path="$(PKG).LDA"
 )
-    
+
 
 ####
 #### BayesianLDA
@@ -161,26 +160,26 @@ $BayesianLDA_DESCR
 # Keyword Parameters
 
 - `method::Symbol=:gevd`: choice of solver, one of `:gevd` or `:whiten` methods
-- `cov_w::CovarianceEstimator=SimpleCovariance()`: an estimator for the within-class 
-    covariance (used in computing within-class scatter matrix, Sw), by default set to the 
-    standard `MultivariateStats.CovarianceEstimator` but could be set to any robust 
+- `cov_w::CovarianceEstimator=SimpleCovariance()`: an estimator for the within-class
+    covariance (used in computing within-class scatter matrix, Sw), by default set to the
+    standard `MultivariateStats.CovarianceEstimator` but could be set to any robust
     estimator from `CovarianceEstimation.jl`.
-- `cov_b::CovarianceEstimator=SimpleCovariance()`: same as `cov_w` but for the  
+- `cov_b::CovarianceEstimator=SimpleCovariance()`: same as `cov_w` but for the
     between-class covariance(used in computing between-class scatter matrix, Sb).
-- `out_dim::Int=0`: the output dimension, i.e dimension of the transformed space, 
+- `out_dim::Int=0`: the output dimension, i.e dimension of the transformed space,
     automatically set if 0 is given (default).
-- `regcoef::Float64=1e-6`: regularization coefficient (default value 1e-6). A positive 
-value `regcoef * eigmax(Sw)` where `Sw` is the within-class covariance estimator, is added 
-    to the diagonal of Sw to improve numerical stability. This can be useful if using the 
+- `regcoef::Float64=1e-6`: regularization coefficient (default value 1e-6). A positive
+value `regcoef * eigmax(Sw)` where `Sw` is the within-class covariance estimator, is added
+    to the diagonal of Sw to improve numerical stability. This can be useful if using the
     standard covariance estimator.
-- `priors::Union{Nothing, Vector{Float64}}=nothing`: For use in prediction with Baye's rule. If `priors = nothing` then 
-    `priors` are estimated from the class proportions in the training data. Otherwise it 
-    requires a `Vector` containing class probabilities with probabilities specified using 
+- `priors::Union{Nothing, Vector{Float64}}=nothing`: For use in prediction with Baye's rule. If `priors = nothing` then
+    `priors` are estimated from the class proportions in the training data. Otherwise it
+    requires a `Vector` containing class probabilities with probabilities specified using
     the order given by `levels(y)` where y is the target vector.
 
 See also the [package documentation](
 https://multivariatestatsjl.readthedocs.io/en/latest/lda.html).
-For more information about the algorithm, see the paper by Li, Zhu and Ogihara, 
+For more information about the algorithm, see the paper by Li, Zhu and Ogihara,
 [Using Discriminant Analysis for Multi-class Classification: An Experimental Investigation](
 http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.89.7068&rep=rep1&type=pdf).
 """
@@ -194,14 +193,14 @@ http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.89.7068&rep=rep1&type=p
 end
 
 function MMI.fit(model::BayesianLDA, ::Int, X, y)
-    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim = 
-        _check_lda_data(model, X, y) 
+    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim =
+        _check_lda_data(model, X, y)
     ## If piors are specified check if they makes sense.
     ## This was put here to through errors much earlier
     if isa(model.priors, Vector)
-        priors = _check_lda_priors(model.priors, nc, nclasses, integers_seen)         
+        priors = _check_lda_priors(model.priors, nc, nclasses, integers_seen)
     end
- 
+
     core_res = MS.fit(
         MS.MulticlassLDA, nc, Xm_t, Int.(yplain);
         method=model.method,
@@ -234,22 +233,23 @@ function MMI.fit(model::BayesianLDA, ::Int, X, y)
     return fitresult, cache, report
 end
 
-function _matrix_transpose(model::Union{LDA, BayesianLDA}, X)
-    return MMI.matrix(X; transpose=true)
+function _matrix_transpose(::Union{LDA,BayesianLDA}, X)
+    # MultivariateStats 9.0 is not supporting adjoints
+    return MMI.matrix(X, transpose=true)
 end
 
 @inline function _check_lda_priors(priors, nc, nclasses, integers_seen)
     if length(priors) != nclasses
         throw(ArgumentError("Invalid size of `priors`."))
     end
-     
+
     # `priors` is esssentially always an instance of type `Vector{Float64}`.
     # The next two conditions implicitly checks that
     # ` 0 .<= priors .<= 1` and `sum(priors) ≈ 1` are true.
     if !isapprox(sum(priors), 1)
         throw(ArgumentError("probabilities specified in `priors` must sum to 1"))
     end
-    if all(>=(0), priors) 
+    if all(>=(0), priors)
         throw(ArgumentError("probabilities specified in `priors` must non-negative"))
     end
     # Select priors for unique classes in `y` (For resampling purporses).
@@ -274,7 +274,7 @@ function MMI.predict(m::BayesianLDA, (core_res, classes_seen, priors, n), Xnew)
     XWt = MMI.matrix(Xnew) * core_res.proj
     # centroids in the transformed space, nc x o
     centroids = transpose(core_res.pmeans)
-  
+
     # The discriminant matrix `Pr` is of dimension `nt x nc`
     # Pr[i,k] = -0.5*(xᵢ −  µₖ)ᵀ(Σw⁻¹)(xᵢ −  µₖ) + log(priorsₖ) where (Σw = Sw/n)
     # In the transformed space this becomes
@@ -308,7 +308,7 @@ metadata_model(
     descr=BayesianLDA_DESCR,
     path="$(PKG).BayesianLDA"
 )
-    
+
 ####
 #### SubspaceLDA
 ####
@@ -320,12 +320,12 @@ $SubspaceLDA_DESCR
 
 # Keyword Parameters
 
-- `normalize=true`: Option to normalize the between class variance for the number of 
+- `normalize=true`: Option to normalize the between class variance for the number of
     observations in each class, one of `true` or `false`.
-- `out_dim`: the dimension of the transformed space to be used by `predict` and 
+- `out_dim`: the dimension of the transformed space to be used by `predict` and
     `transform` methods, automatically set if 0 is given (default).
-- `dist=SqEuclidean`: the distance metric to use when performing classification 
-    (to compare the distance between a new point and centroids in the transformed space), 
+- `dist=SqEuclidean`: the distance metric to use when performing classification
+    (to compare the distance between a new point and centroids in the transformed space),
     an alternative choice can be the `CosineDist`.
 
 See also the [package documentation](
@@ -342,14 +342,14 @@ end
 
 function MMI.fit(model::SubspaceLDA, ::Int, X, y)
     Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim =
-        _check_lda_data(model, X, y) 
+        _check_lda_data(model, X, y)
 
     core_res = MS.fit(
         MS.SubspaceLDA, Xm_t, Int.(yplain), nc;
         normalize = model.normalize
     )
     # λ is a (nc -1) x 1 vector containing the eigen values sorted in descending order.
-    λ = core_res.λ 
+    λ = core_res.λ
     explained_variance_ratio = λ ./ sum(λ) #proportions of variance
 
     cache = nothing
@@ -409,15 +409,15 @@ $BayesianSubspaceLDA_DESCR
 
 - `normalize::Bool=true`: Option to normalize the between class variance for the number of
     observations in each class, one of `true` or `false`.
-- `out_dim::Int=0`: the dimension of the transformed space to be used by `predict` and 
+- `out_dim::Int=0`: the dimension of the transformed space to be used by `predict` and
     `transform` methods, automatically set if 0 is given (default).
-- `priors::Union{Nothing, Vector{Float64}}=nothing`: For use in prediction with Baye's 
-    rule. If `priors = nothing` then `priors` are estimated from the class proportions 
-    in the training data. Otherwise it requires a `Vector` containing class 
-    probabilities with probabilities specified using the order given by `levels(y)` 
+- `priors::Union{Nothing, Vector{Float64}}=nothing`: For use in prediction with Baye's
+    rule. If `priors = nothing` then `priors` are estimated from the class proportions
+    in the training data. Otherwise it requires a `Vector` containing class
+    probabilities with probabilities specified using the order given by `levels(y)`
     where y is the target vector.
 
-For more information about the algorithm, see the paper by Howland & Park (2006), 
+For more information about the algorithm, see the paper by Howland & Park (2006),
 "Generalizing discriminant analysis using the generalized singular value decomposition"
 ,IEEE Trans. Patt. Anal. & Mach. Int., 26: 995-1006.
 """
@@ -428,14 +428,14 @@ For more information about the algorithm, see the paper by Howland & Park (2006)
 end
 
 function MMI.fit(model::BayesianSubspaceLDA, ::Int, X, y)
-    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim = 
-        _check_lda_data(model, X, y) 
+    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim =
+        _check_lda_data(model, X, y)
     ## If piors are specified check if they makes sense.
     ## This was put here to through errors much earlier
     if isa(model.priors, Vector)
-        priors = _check_lda_priors(model.priors, nc, nclasses, integers_seen)         
+        priors = _check_lda_priors(model.priors, nc, nclasses, integers_seen)
     end
-    
+
     core_res = MS.fit(
         MS.SubspaceLDA, Xm_t, Int.(yplain), nc;
         normalize = model.normalize
@@ -466,9 +466,9 @@ function MMI.fit(model::BayesianSubspaceLDA, ::Int, X, y)
 end
 
 function _matrix_transpose(model::Union{SubspaceLDA, BayesianSubspaceLDA}, X)
-    return transpose(MMI.matrix(X))
+    return MMI.matrix(X)'
 end
- 
+
 function MMI.fitted_params(::BayesianSubspaceLDA, (core_res, _, _, priors,_))
     return (
         projected_class_means=MS.classmeans(core_res),
@@ -487,7 +487,7 @@ function MMI.predict(
     #proj is the projection_matrix
     proj = core_res.projw * view(core_res.projLDA, :, 1:out_dim)
     XWt = MMI.matrix(Xnew) * proj
-    
+
     # centroids in the transformed space, nc x o
     centroids = transpose(core_res.cmeans) * proj
     nc = length(classes_seen)
@@ -499,8 +499,8 @@ function MMI.predict(
     # Pr[i,k] = -0.5*(Pᵀxᵢ −  Pᵀµₖ)ᵀ(PᵀΣw⁻¹P)(Pᵀxᵢ −  Pᵀµₖ) + log(priorsₖ)
     # But PᵀSw⁻¹P = (1/mult)*I and PᵀΣw⁻¹P = (n-nc)/mult*I
     # Giving Pr[i,k] = -0.5*n*(Pᵀxᵢ −  Pᵀµₖ)ᵀ(Pᵀxᵢ −  Pᵀµₖ) + log(priorsₖ)
-    # (Pᵀxᵢ −  Pᵀµₖ)ᵀ(Pᵀxᵢ −  Pᵀµₖ) is the SquaredEquclidean distance in the 
-    # transformed space  
+    # (Pᵀxᵢ −  Pᵀµₖ)ᵀ(Pᵀxᵢ −  Pᵀµₖ) is the SquaredEquclidean distance in the
+    # transformed space
     Pr = pairwise(SqEuclidean(), XWt, centroids, dims=1)
     Pr .*= (-(n-nc)/2mult)
     Pr .+= log.(transpose(priors))
@@ -512,7 +512,8 @@ end
 
 function MMI.transform(m::T, (core_res, out_dim, _), X) where T<:Union{SubspaceLDA, BayesianSubspaceLDA}
     # projection of X, XWt is nt x o  where o = out dims
-    proj = core_res.projw * view(core_res.projLDA, :, 1:out_dim) #proj is the projection_matrix
+    proj = core_res.projw * view(core_res.projLDA, :, 1:out_dim)
+    #proj is the projection_matrix
     XWt = MMI.matrix(X) * proj
     return MMI.table(XWt, prototype = X)
 end

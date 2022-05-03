@@ -34,9 +34,8 @@ function MMI.fit(model::PCA, verbosity::Int, X)
     Xarray = MMI.matrix(X)
     mindim = minimum(size(Xarray))
     maxoutdim = model.maxoutdim == 0 ? mindim : model.maxoutdim
-    # NOTE: copy/transpose
     fitresult = MS.fit(
-        MS.PCA, transpose(Xarray);
+        MS.PCA, Xarray';
         method=model.method,
         pratio=model.pratio,
         maxoutdim=maxoutdim,
@@ -178,7 +177,7 @@ function MMI.fit(model::ICA, verbosity::Int, X)
     m = min(n, p)
     k = ifelse(model.k ≤ m, model.k, m)
     fitresult = MS.fit(
-        MS.ICA, transpose(Xarray), k;
+        MS.ICA, Xarray', k;
         alg=model.alg,
         fun=icagfun(model.fun, eltype(Xarray)),
         do_whiten=model.do_whiten,
@@ -238,9 +237,8 @@ function MMI.fit(model::PPCA, verbosity::Int, X)
     Xarray = MMI.matrix(X)
     def_dim = max(1, size(Xarray, 2) - 1)
     maxoutdim = model.maxoutdim == 0 ? def_dim : model.maxoutdim
-    # NOTE: copy/transpose
     fitresult = MS.fit(
-        MS.PPCA, transpose(Xarray);
+        MS.PPCA, Xarray';
         method=model.method,
         tol=model.tol,
         maxiter=model.maxiter,
@@ -301,9 +299,8 @@ function MMI.fit(model::FactorAnalysis, verbosity::Int, X)
     Xarray = MMI.matrix(X)
     def_dim = max(1, size(Xarray, 2) - 1)
     maxoutdim = model.maxoutdim == 0 ? def_dim : model.maxoutdim
-    # NOTE: copy/transpose
     fitresult = MS.fit(
-        MS.FactorAnalysis, transpose(Xarray);
+        MS.FactorAnalysis, Xarray';
         method=model.method,
         maxiter=model.maxiter,
         tol=model.tol,
@@ -349,17 +346,17 @@ for (M, MFitResultType) in model_types
     end
 
     @eval function MMI.transform(::$M, fr::$MFitResultType, X)
-        # X is n x d, need to transpose twice
+        # X is n x d, need to take adjoint twice
         Xarray = MMI.matrix(X)
-        Xnew = transpose(MS.predict(fr, transpose(Xarray)))
+        Xnew = MS.predict(fr, Xarray')'
         return MMI.table(Xnew, prototype=X)
     end
 
     if hasmethod(MS.reconstruct, Tuple{MFitResultType{Float64}, Matrix{Float64}})
         @eval function MMI.inverse_transform(::$M, fr::$MFitResultType, Y)
-            # X is n x p, need to transpose twice
+            # X is n x p, need to take adjoint twice
             Yarray = MMI.matrix(Y)
-            Ynew = transpose(MS.reconstruct(fr, transpose(Yarray)))
+            Ynew = MS.reconstruct(fr, Yarray')'
             return MMI.table(Ynew, prototype=Y)
         end
     end
