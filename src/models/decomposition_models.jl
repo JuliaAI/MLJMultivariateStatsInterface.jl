@@ -9,14 +9,14 @@ $PCA_DESCR
 
 # Keyword Parameters
 
-- `maxoutdim::Int=0`: maximum number of output dimensions, uses the smallest dimension of 
+- `maxoutdim::Int=0`: maximum number of output dimensions, uses the smallest dimension of
     training feature matrix if 0 (default).
-- `method::Symbol=:auto`: method to use to solve the problem, one of `:auto`,`:cov` 
+- `method::Symbol=:auto`: method to use to solve the problem, one of `:auto`,`:cov`
     or `:svd`
 - `pratio::Float64=0.99`: ratio of variance preserved
-- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: if set to nothing(default)  
-    centering will be computed and applied, if set to `0` no 
-    centering(assumed pre-centered), if a vector is passed, the centering is done with 
+- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: if set to nothing(default)
+    centering will be computed and applied, if set to `0` no
+    centering(assumed pre-centered), if a vector is passed, the centering is done with
     that vector.
 """
 @mlj_model mutable struct PCA <: MMI.Unsupervised
@@ -34,9 +34,8 @@ function MMI.fit(model::PCA, verbosity::Int, X)
     Xarray = MMI.matrix(X)
     mindim = minimum(size(Xarray))
     maxoutdim = model.maxoutdim == 0 ? mindim : model.maxoutdim
-    # NOTE: copy/transpose
     fitresult = MS.fit(
-        MS.PCA, transpose(Xarray);
+        MS.PCA, Xarray';
         method=model.method,
         pratio=model.pratio,
         maxoutdim=maxoutdim,
@@ -74,14 +73,14 @@ $KPCA_DESCR
 
 # Keyword Parameters
 
-- `maxoutdim::Int = 0`: maximum number of output dimensions, uses the smallest 
+- `maxoutdim::Int = 0`: maximum number of output dimensions, uses the smallest
     dimension of training feature matrix if 0 (default).
-- `kernel::Function=(x,y)->x'y`: kernel function of 2 vector arguments x and y, returns a 
+- `kernel::Function=(x,y)->x'y`: kernel function of 2 vector arguments x and y, returns a
     scalar value
-- `solver::Symbol=:auto`: solver to use for the eigenvalues, one of `:eig`(default), 
+- `solver::Symbol=:auto`: solver to use for the eigenvalues, one of `:eig`(default),
     `:eigs`
-- `inverse::Bool=false`: perform calculation for inverse transform
-- `beta::Real=1.0`: strength of the ridge regression that learns the inverse transform 
+- `inverse::Bool=true`: perform calculations needed for inverse transform
+- `beta::Real=1.0`: strength of the ridge regression that learns the inverse transform
     when inverse is true
 - `tol::Real=0.0`: Convergence tolerance for eigs solver
 - `maxiter::Int=300`: maximum number of iterations for eigs solver
@@ -90,7 +89,7 @@ $KPCA_DESCR
     maxoutdim::Int = 0::(_ ≥ 0)
     kernel::Union{Nothing, Function} = default_kernel
     solver::Symbol = :eig::(_ in (:eig, :eigs))
-    inverse::Bool = false
+    inverse::Bool = true
     beta::Real = 1.0::(_ ≥ 0.0)
     tol::Real = 1e-6::(_ ≥ 0.0)
     maxiter::Int = 300::(_ ≥ 1)
@@ -102,7 +101,7 @@ function MMI.fit(model::KernelPCA, verbosity::Int, X)
     # default max out dim if not given
     maxoutdim = model.maxoutdim == 0 ? mindim : model.maxoutdim
     fitresult = MS.fit(
-        MS.KernelPCA, 
+        MS.KernelPCA,
         permutedims(Xarray);
         kernel=model.kernel,
         maxoutdim=maxoutdim,
@@ -147,12 +146,12 @@ $ICA_DESCR
 - `do_whiten::Bool=true`: whether to perform pre-whitening
 - `maxiter::Int=100`: maximum number of iterations
 - `tol::Real=1e-6`: convergence tolerance for change in matrix W
-- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: mean to use, if nothing (default) 
-    centering is computed andapplied, if zero, no centering, a vector of means can 
+- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: mean to use, if nothing (default)
+    centering is computed andapplied, if zero, no centering, a vector of means can
     be passed
-- `winit::Union{Nothing,Matrix{<:Real}}=nothing`: initial guess for matrix `W` either 
-    an empty matrix (random initilization of `W`), a matrix of size `k × k` (if `do_whiten` 
-    is true), a matrix of size `m × k` otherwise. If unspecified i.e `nothing` an empty 
+- `winit::Union{Nothing,Matrix{<:Real}}=nothing`: initial guess for matrix `W` either
+    an empty matrix (random initilization of `W`), a matrix of size `k × k` (if `do_whiten`
+    is true), a matrix of size `m × k` otherwise. If unspecified i.e `nothing` an empty
     `Matrix{<:Real}` is used.
 """
 @mlj_model mutable struct ICA <: MMI.Unsupervised
@@ -177,7 +176,7 @@ function MMI.fit(model::ICA, verbosity::Int, X)
     m = min(n, p)
     k = ifelse(model.k ≤ m, model.k, m)
     fitresult = MS.fit(
-        MS.ICA, transpose(Xarray), k;
+        MS.ICA, Xarray', k;
         alg=model.alg,
         fun=icagfun(model.fun, eltype(Xarray)),
         do_whiten=model.do_whiten,
@@ -215,14 +214,14 @@ $PPCA_DESCR
 
 # Keyword Parameters
 
-- `maxoutdim::Int=0`: maximum number of output dimensions, uses max(no_of_features - 1, 1) 
+- `maxoutdim::Int=0`: maximum number of output dimensions, uses max(no_of_features - 1, 1)
     if 0 (default).
 - `method::Symbol=:ml`: method to use to solve the problem, one of `:ml`, `:em`, `:bayes`.
 - `maxiter::Int=1000`: maximum number of iterations.
 - `tol::Real=1e-6`: convergence tolerance.
-- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: if set to nothing(default)  
-    centering will be computed and applied, if set to `0` no 
-    centering(assumed pre-centered), if a vector is passed, the centering is done with 
+- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: if set to nothing(default)
+    centering will be computed and applied, if set to `0` no
+    centering(assumed pre-centered), if a vector is passed, the centering is done with
     that vector.
 """
 @mlj_model mutable struct PPCA <: MMI.Unsupervised
@@ -237,9 +236,8 @@ function MMI.fit(model::PPCA, verbosity::Int, X)
     Xarray = MMI.matrix(X)
     def_dim = max(1, size(Xarray, 2) - 1)
     maxoutdim = model.maxoutdim == 0 ? def_dim : model.maxoutdim
-    # NOTE: copy/transpose
     fitresult = MS.fit(
-        MS.PPCA, transpose(Xarray);
+        MS.PPCA, Xarray';
         method=model.method,
         tol=model.tol,
         maxiter=model.maxiter,
@@ -277,14 +275,14 @@ $PPCA_DESCR
 # Keyword Parameters
 
 - `method::Symbol=:cm`: Method to use to solve the problem, one of `:ml`, `:em`, `:bayes`.
-- `maxoutdim::Int=0`: Maximum number of output dimensions, uses max(no_of_features - 1, 1) 
+- `maxoutdim::Int=0`: Maximum number of output dimensions, uses max(no_of_features - 1, 1)
     if 0 (default).
 - `maxiter::Int=1000`: Maximum number of iterations.
 - `tol::Real=1e-6`: Convergence tolerance.
 - `eta::Real=tol`: Variance lower bound
-- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: If set to nothing(default)  
-    centering will be computed and applied, if set to `0` no 
-    centering(assumed pre-centered), if a vector is passed, the centering is done with 
+- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: If set to nothing(default)
+    centering will be computed and applied, if set to `0` no
+    centering(assumed pre-centered), if a vector is passed, the centering is done with
     that vector.
 """
 @mlj_model mutable struct FactorAnalysis <: MMI.Unsupervised
@@ -300,9 +298,8 @@ function MMI.fit(model::FactorAnalysis, verbosity::Int, X)
     Xarray = MMI.matrix(X)
     def_dim = max(1, size(Xarray, 2) - 1)
     maxoutdim = model.maxoutdim == 0 ? def_dim : model.maxoutdim
-    # NOTE: copy/transpose
     fitresult = MS.fit(
-        MS.FactorAnalysis, transpose(Xarray);
+        MS.FactorAnalysis, Xarray';
         method=model.method,
         maxiter=model.maxiter,
         tol=model.tol,
@@ -348,17 +345,17 @@ for (M, MFitResultType) in model_types
     end
 
     @eval function MMI.transform(::$M, fr::$MFitResultType, X)
-        # X is n x d, need to transpose twice
+        # X is n x d, need to take adjoint twice
         Xarray = MMI.matrix(X)
-        Xnew = transpose(MS.predict(fr, transpose(Xarray)))
+        Xnew = MS.predict(fr, Xarray')'
         return MMI.table(Xnew, prototype=X)
     end
 
     if hasmethod(MS.reconstruct, Tuple{MFitResultType{Float64}, Matrix{Float64}})
         @eval function MMI.inverse_transform(::$M, fr::$MFitResultType, Y)
-            # X is n x p, need to transpose twice
+            # X is n x p, need to take adjoint twice
             Yarray = MMI.matrix(Y)
-            Ynew = transpose(MS.reconstruct(fr, transpose(Yarray)))
+            Ynew = MS.reconstruct(fr, Yarray')'
             return MMI.table(Ynew, prototype=Y)
         end
     end
