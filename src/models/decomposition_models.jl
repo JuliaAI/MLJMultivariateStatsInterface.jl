@@ -143,8 +143,7 @@ $ICA_DESCR
 
 - `k::Int=0`: number of independent components to recover, set automatically if `0`
 - `alg::Symbol=:fastica`: algorithm to use (only `:fastica` is supported at the moment)
-- `fun::Symbol=:tanh`: approximate neg-entropy functor, via the function 
-    `MultivariateStats.icagfun`, one of `:tanh` and `:gaus`
+- `fun::Symbol=:tanh`: approximate neg-entropy function, one of `:tanh`, `:gaus`
 - `do_whiten::Bool=true`: whether to perform pre-whitening
 - `maxiter::Int=100`: maximum number of iterations
 - `tol::Real=1e-6`: convergence tolerance for change in matrix W
