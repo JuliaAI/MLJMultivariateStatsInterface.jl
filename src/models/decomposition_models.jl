@@ -44,11 +44,11 @@ function MMI.fit(model::PCA, verbosity::Int, X)
     )
     cache = nothing
     report = (
-        indim=MS.indim(fitresult),
-        outdim=MS.outdim(fitresult),
+        indim=MS.size(fitresult,1),
+        outdim=MS.size(fitresult,2),
         tprincipalvar=MS.tprincipalvar(fitresult),
         tresidualvar=MS.tresidualvar(fitresult),
-        tvar=MS.tvar(fitresult),
+        tvar=MS.var(fitresult),
         mean=copy(MS.mean(fitresult)),
         principalvars=copy(MS.principalvars(fitresult))
     )
@@ -113,9 +113,9 @@ function MMI.fit(model::KernelPCA, verbosity::Int, X)
     )
     cache  = nothing
     report = (
-        indim=MS.indim(fitresult),
-        outdim=MS.outdim(fitresult),
-        principalvars=copy(MS.principalvars(fitresult))
+        indim=MS.size(fitresult,1),
+        outdim=MS.size(fitresult,2),
+        principalvars=copy(MS.eigvals(fitresult))
     )
     return fitresult, cache, report
 end
@@ -168,6 +168,11 @@ $ICA_DESCR
 end
 
 function MMI.fit(model::ICA, verbosity::Int, X)
+    icagfun(fname::Symbol, ::Type{T} = Float64) where T<:Real=
+    fname == :tanh ? MS.Tanh{T}(1.0) :
+    fname == :gaus ? MS.Gaus{T}() :
+    error("Unknown gfun $(fname)")
+
     Xarray = MMI.matrix(X)
     n, p = size(Xarray)
     m = min(n, p)
@@ -175,7 +180,7 @@ function MMI.fit(model::ICA, verbosity::Int, X)
     fitresult = MS.fit(
         MS.ICA, transpose(Xarray), k;
         alg=model.alg,
-        fun=MS.icagfun(model.fun, eltype(Xarray)),
+        fun=icagfun(model.fun, eltype(Xarray)),
         do_whiten=model.do_whiten,
         maxiter=model.maxiter,
         tol=model.tol,
@@ -184,8 +189,8 @@ function MMI.fit(model::ICA, verbosity::Int, X)
     )
     cache = nothing
     report = (
-        indim=MS.indim(fitresult),
-        outdim=MS.outdim(fitresult),
+        indim=MS.size(fitresult,1),
+        outdim=MS.size(fitresult,2),
         mean=copy(MS.mean(fitresult))
     )
     return fitresult, cache, report
@@ -244,8 +249,8 @@ function MMI.fit(model::PPCA, verbosity::Int, X)
     )
     cache = nothing
     report = (
-        indim=MS.indim(fitresult),
-        outdim=MS.outdim(fitresult),
+        indim=MS.size(fitresult,1),
+        outdim=MS.size(fitresult,2),
         tvar=MS.var(fitresult),
         mean=copy(MS.mean(fitresult)),
         loadings=MS.loadings(fitresult)
@@ -308,8 +313,8 @@ function MMI.fit(model::FactorAnalysis, verbosity::Int, X)
     )
     cache = nothing
     report = (
-        indim=MS.indim(fitresult),
-        outdim=MS.outdim(fitresult),
+        indim=MS.size(fitresult,1),
+        outdim=MS.size(fitresult,2),
         variance=MS.var(fitresult),
         covariance_matrix=MS.cov(fitresult),
         mean=MS.mean(fitresult),
@@ -346,7 +351,7 @@ for (M, MFitResultType) in model_types
     @eval function MMI.transform(::$M, fr::$MFitResultType, X)
         # X is n x d, need to transpose twice
         Xarray = MMI.matrix(X)
-        Xnew = transpose(MS.transform(fr, transpose(Xarray)))
+        Xnew = transpose(MS.predict(fr, transpose(Xarray)))
         return MMI.table(Xnew, prototype=X)
     end
 

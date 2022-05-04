@@ -55,7 +55,7 @@ function MMI.fit(model::LDA, ::Int, X, y)
     cache = nothing
     report = (
         classes=classes_seen,
-        out_dim=MS.outdim(core_res),
+        out_dim=MS.size(core_res)[2],
         class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
@@ -221,7 +221,7 @@ function MMI.fit(model::BayesianLDA, ::Int, X, y)
     cache     = nothing
     report    = (
         classes=classes_seen,
-        out_dim=MS.outdim(core_res),
+        out_dim=MS.size(core_res)[2],
         class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
