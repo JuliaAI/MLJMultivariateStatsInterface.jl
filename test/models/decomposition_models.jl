@@ -49,6 +49,32 @@ end
         winit=randn(rng, eltype(X_array), size(X_array, 2), k))
     test_composition_model(ica_ms, ica_mlj, X, X_array, test_inverse=false)
 end
+@testset "ICA2" begin
+    X_array = matrix(X)
+    k = 5
+    tolerance = 5.0
+    # MultivariateStats ICA
+    rng = StableRNG(1234) # winit gets randomly initialised
+    #Random.seed!(1234) # winit gets randomly initialised
+    ica_ms = MultivariateStats.fit(
+        MultivariateStats.ICA,
+        permutedims(X_array),
+        k;
+        tol=tolerance,
+        fun=MultivariateStats.Gaus(),
+        winit = randn(rng, eltype(X_array), size(X_array, 2), k)
+    )
+    # MLJ ICA
+    rng = StableRNG(1234) # winit gets randomly initialised
+    #Random.seed!(1234) # winit gets randomly initialised
+    ica_mlj = ICA(
+        k=k,
+        tol=tolerance,
+        fun=:gaus,
+        winit=randn(rng, eltype(X_array), size(X_array, 2), k))
+    test_composition_model(ica_ms, ica_mlj, X, X_array, test_inverse=false)
+end
+
 
 @testset "PPCA" begin
     X_array = matrix(X)

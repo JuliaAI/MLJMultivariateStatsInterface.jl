@@ -168,7 +168,7 @@ end
 function MMI.fit(model::ICA, verbosity::Int, X)
     icagfun(fname::Symbol, ::Type{T} = Float64) where T<:Real=
     fname == :tanh ? MS.Tanh{T}(1.0) :
-    fname == :gaus ? MS.Gaus{T}() :
+    fname == :gaus ? MS.Gaus() :
     error("Unknown gfun $(fname)")
 
     Xarray = MMI.matrix(X)
