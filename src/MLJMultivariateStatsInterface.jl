@@ -152,7 +152,7 @@ metadata_pkg.(
 
 """
 $(MMI.doc_header(LinearRegressor))
-`LinearRegressor` implements the $TODO.
+`LinearRegressor` implements the TODO.
 
 # Training data
 
@@ -176,18 +176,32 @@ Where
 - `predict(mach, Xnew)`:
 
 # Fitted parameters
+
 The fields of `fitted_params(mach)` are:
 
 - `coefficients`:
 - `intercept`:
 
-# Report
-The fields of `report(mach)` are:
-
 # Examples
-```
 
 ```
+# example from [JuliaStats](https://juliastats.org/MultivariateStats.jl/dev/lreg/#Examples)
+using MLJ
+
+
+LinearRegressor = @load LinearRegressor pkg=MultivariateStats
+linear_regressor = LinearRegressor()
+
+
+X, y = make_regression(100, 2) # synthetic data
+mach = machine(linear_regressor, X, y) |> fit!
+
+
+Xnew, _ = make_regression(3, 2)
+yhat = predict(mach, Xnew) # new predictions
+yhat_point = predict_mean(mach, Xnew) # new predictions
+```
+
 See also
 TODO: ADD REFERENCES
 """
