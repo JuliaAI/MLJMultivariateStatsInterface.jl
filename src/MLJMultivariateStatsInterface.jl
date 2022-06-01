@@ -161,10 +161,8 @@ In MLJ or MLJBase, bind an instance `model` to data with
 
 Where
 
-TODO: Check if we can put factors here
 - `X`: any table of input features (eg, a `DataFrame`) whose columns
-  each have one of the following element scitypes: `Continuous`,
-  `Count`, or `<:OrderedFactor`; check column scitypes with `schema(X)`
+  are of scitype `Continuous`
 
 - `y`: is the target, which can be any `AbstractVector` whose element
   scitype is `Continuous`; check the scitype with `scitype(y)`
