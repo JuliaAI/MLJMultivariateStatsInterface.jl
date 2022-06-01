@@ -45,13 +45,13 @@ const FactorAnalysis_DESCR = "Factor Analysis"
 const LDA_DESCR = """
       Multiclass linear discriminant analysis. The algorithm learns a
     projection matrix `P` that projects a feature matrix `Xtrain` onto a lower dimensional
-    space of dimension `out_dim` such that the trace of the transformed between-class 
-    scatter matrix(`Pᵀ*Sb*P`) is maximized relative to the trace of the transformed 
-    within-class scatter matrix (`Pᵀ*Sw*P`).The projection matrix is scaled such that 
+    space of dimension `out_dim` such that the trace of the transformed between-class
+    scatter matrix(`Pᵀ*Sb*P`) is maximized relative to the trace of the transformed
+    within-class scatter matrix (`Pᵀ*Sw*P`).The projection matrix is scaled such that
     `Pᵀ*Sw*P=I` or `Pᵀ*Σw*P=I`(where `Σw` is the within-class covariance matrix) .
-    Predicted class posterior probability for feature matrix `Xtest` are derived by 
-    applying a softmax transformationto a matrix `Pr`, such that  rowᵢ of `Pr` contains 
-    computed distances(based on a distance metric) in the transformed space of rowᵢ in 
+    Predicted class posterior probability for feature matrix `Xtest` are derived by
+    applying a softmax transformationto a matrix `Pr`, such that  rowᵢ of `Pr` contains
+    computed distances(based on a distance metric) in the transformed space of rowᵢ in
     `Xtest` to the centroid of each class.
     """
 const BayesianLDA_DESCR = """
@@ -59,10 +59,10 @@ const BayesianLDA_DESCR = """
     learns a projection matrix `P` that projects a feature matrix `Xtrain` onto a lower
     dimensional space of dimension `out_dim` such that the trace of the transformed
     between-class scatter matrix(`Pᵀ*Sb*P`) is maximized relative to the trace of the
-    transformed within-class scatter matrix (`Pᵀ*Sw*P`). The projection matrix is scaled 
-    such that `Pᵀ*Sw*P = n` or `Pᵀ*Σw*P=I` (Where `n` is the number of training samples 
+    transformed within-class scatter matrix (`Pᵀ*Sw*P`). The projection matrix is scaled
+    such that `Pᵀ*Sw*P = n` or `Pᵀ*Σw*P=I` (Where `n` is the number of training samples
     and `Σw` is the within-class covariance matrix).
-    Predicted class posterior probability distibution are derived by applying Bayes rule 
+    Predicted class posterior probability distibution are derived by applying Bayes rule
     with a multivariate Gaussian class-conditional distribution.
     """
 const SubspaceLDA_DESCR = """
@@ -71,24 +71,24 @@ const SubspaceLDA_DESCR = """
     projection matrix `P = W*L` that projects a feature matrix `Xtrain` onto a lower
     dimensional space of dimension `nc - 1` such that the trace of the transformed
     between-class scatter matrix(`Pᵀ*Sb*P`) is maximized relative to the trace of the
-    transformed within-class scatter matrix (`Pᵀ*Sw*P`). The projection matrix is scaled 
-    such that `Pᵀ*Sw*P = mult*I` or `Pᵀ*Σw*P=mult/(n-nc)*I` (where `n` is the number of 
-    training samples, mult` is  one of `n` or `1` depending on whether `Sb` is normalized, 
-    `Σw` is the within-class covariance matrix, and `nc` is the number of unique classes 
+    transformed within-class scatter matrix (`Pᵀ*Sw*P`). The projection matrix is scaled
+    such that `Pᵀ*Sw*P = mult*I` or `Pᵀ*Σw*P=mult/(n-nc)*I` (where `n` is the number of
+    training samples, mult` is  one of `n` or `1` depending on whether `Sb` is normalized,
+    `Σw` is the within-class covariance matrix, and `nc` is the number of unique classes
     in `y`) and also obeys `Wᵀ*Sb*p = λ*Wᵀ*Sw*p`, for every column `p` in `P`.
-    Predicted class posterior probability for feature matrix `Xtest` are derived by 
-    applying a softmax transformation to a matrix `Pr`, such that  rowᵢ of `Pr` contains 
-    computed distances(based on a distance metric) in the transformed space of rowᵢ in 
+    Predicted class posterior probability for feature matrix `Xtest` are derived by
+    applying a softmax transformation to a matrix `Pr`, such that  rowᵢ of `Pr` contains
+    computed distances(based on a distance metric) in the transformed space of rowᵢ in
     `Xtest` to the centroid of each class.
     """
 const BayesianSubspaceLDA_DESCR = """
-       Bayesian Multiclass linear discriminant analysis. Suitable for high dimensional data 
-    (Avoids computing scatter matrices `Sw` ,`Sb`). The algorithm learns a projection 
-    matrix `P = W*L` (`Sw`), that projects a feature matrix `Xtrain` onto a lower 
-    dimensional space of dimension `nc-1` such that the trace of the transformed 
-    between-class scatter matrix(`Pᵀ*Sb*P`) is maximized relative to the trace of the 
-    transformed within-class scatter matrix (`Pᵀ*Sw*P`). The projection matrix is scaled 
-    such that `Pᵀ*Sw*P = mult*I` or `Pᵀ*Σw*P=mult/(n-nc)*I` (where `n` is the number of 
+       Bayesian Multiclass linear discriminant analysis. Suitable for high dimensional data
+    (Avoids computing scatter matrices `Sw` ,`Sb`). The algorithm learns a projection
+    matrix `P = W*L` (`Sw`), that projects a feature matrix `Xtrain` onto a lower
+    dimensional space of dimension `nc-1` such that the trace of the transformed
+    between-class scatter matrix(`Pᵀ*Sb*P`) is maximized relative to the trace of the
+    transformed within-class scatter matrix (`Pᵀ*Sw*P`). The projection matrix is scaled
+    such that `Pᵀ*Sw*P = mult*I` or `Pᵀ*Σw*P=mult/(n-nc)*I` (where `n` is the number of
     training samples, `mult` is  one of `n` or `1` depending on whether `Sb` is normalized,
     `Σw` is the within-class covariance matrix, and `nc` is the number of unique classes in
     `y`) and also obeys `Wᵀ*Sb*p = λ*Wᵀ*Sw*p`, for every column `p` in `P`.
@@ -149,5 +149,50 @@ metadata_pkg.(
     julia = true,
     is_wrapper = false
 )
+
+"""
+$(MMI.doc_header(LinearRegressor))
+`LinearRegressor` implements the $TODO.
+
+# Training data
+
+In MLJ or MLJBase, bind an instance `model` to data with
+    mach = machine(model, X, y)
+
+Where
+
+TODO: Check if we can put factors here
+- `X`: any table of input features (eg, a `DataFrame`) whose columns
+  each have one of the following element scitypes: `Continuous`,
+  `Count`, or `<:OrderedFactor`; check column scitypes with `schema(X)`
+
+- `y`: is the target, which can be any `AbstractVector` whose element
+  scitype is `Continuous`; check the scitype with `scitype(y)`
+
+# Hyper-parameters
+
+- `bias=true`: include bias term if true, else fit without bias term
+
+# Operations
+
+- `predict(mach, Xnew)`:
+
+# Fitted parameters
+The fields of `fitted_params(mach)` are:
+
+- `coefficients`:
+- `intercept`:
+
+# Report
+The fields of `report(mach)` are:
+
+# Examples
+```
+
+```
+See also
+TODO: ADD REFERENCES
+"""
+LinearRegressor
 
 end
