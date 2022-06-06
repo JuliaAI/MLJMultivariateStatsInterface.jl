@@ -406,15 +406,15 @@ X = augment_X(randn(100, 80), true)
 y = X * θ
 X, y = map(x -> DataFrame(x, :auto), (X, y))
 
-linear_regressor = LinearRegressor()
-mach = machine(linear_regressor, X, y) |> fit!
-llsq_coef = fitted_params(mach).coefficients
-
-ridge_regressor = RidgeRegressor(lambda=0)
-ridge_mach = machine(ridge_regressor, X, y) |> fit!
-coef = fitted_params(ridge_mach).coefficients
-difference = llsq_coef - coef
-@info "difference between λ=0 ridge and llsq" mean(difference) std(difference)
+# linear_regressor = LinearRegressor() # positive semi definite error for cholesky :(
+# mach = machine(linear_regressor, X, y) |> fit!
+# llsq_coef = fitted_params(mach).coefficients
+#
+# ridge_regressor = RidgeRegressor(lambda=0)
+# ridge_mach = machine(ridge_regressor, X, y) |> fit!
+# coef = fitted_params(ridge_mach).coefficients
+# difference = llsq_coef - coef
+# @info "difference between λ=0 ridge and llsq" mean(difference) std(difference)
 
 
 ridge_regressor = RidgeRegressor(lambda=1.5)
@@ -429,4 +429,13 @@ TODO: ADD REFERENCES
 """
 MultitargetRidgeRegressor
 
+PCA
+KernelPCA
+ICA
+LDA
+BayesianLDA
+SubspaceLDA
+BayesianSubspaceLDA
+FactorAnalysis
+PPCA
 end
