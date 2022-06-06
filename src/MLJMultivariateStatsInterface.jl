@@ -229,7 +229,7 @@ Where
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
   are of scitype `Continuous`; check the scitype with `schema(X)`
 
-- `y`: is the target, which can be any `AbstractMatrix` whose element
+- `y`: is the target, which can be any table of responses whose element
   scitype is `Continuous`; check the scitype with `schema(y)`
 
 # Hyper-parameters
@@ -367,7 +367,7 @@ Where
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
   are of scitype `Continuous`; check the scitype with `schema(X)`
 
-- `y`: is the target, which can be any `AbstractMatrix` whose element
+- `y`: is the target, which can be any table of responses whose element
   scitype is `Continuous`; check the scitype with `schema(y)`
 
 # Hyper-parameters
