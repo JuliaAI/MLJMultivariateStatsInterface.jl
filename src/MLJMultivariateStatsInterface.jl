@@ -152,7 +152,12 @@ metadata_pkg.(
 
 """
 $(MMI.doc_header(LinearRegressor))
-`LinearRegressor` implements the TODO.
+
+`LinearRegressor` assumes the target is a continuous variable
+whose conditional distribution is normal with constant variance, and whose
+expected value is a linear combination of the features. Linear coefficients
+are calculated using least squares.
+Options exist to specify a bias term.
 
 # Training data
 
@@ -161,11 +166,11 @@ In MLJ or MLJBase, bind an instance `model` to data with
 
 Where
 
-- `X`: any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`
+- `X`: is any table of input features (eg, a `DataFrame`) whose columns
+  are of scitype `Continuous`; check the scitype with `schema(X)`
 
 - `y`: is the target, which can be any `AbstractVector` whose element
-  scitype is `Continuous`; check the scitype with `scitype(y)`
+  scitype is `Continuous`; check the scitype with `schema(y)`
 
 # Hyper-parameters
 
@@ -173,21 +178,20 @@ Where
 
 # Operations
 
-- `predict(mach, Xnew)`:
+- `predict(mach, Xnew)`: Return predictions of the target given new
+  features `Xnew` having the same Scitype as `X` above.
 
 # Fitted parameters
 
 The fields of `fitted_params(mach)` are:
 
-- `coefficients`:
-- `intercept`:
+- `coefficients`: The linear coefficients determined by the model.
+- `intercept`: The intercept determined by the model.
 
 # Examples
 
 ```
-# example from [JuliaStats](https://juliastats.org/MultivariateStats.jl/dev/lreg/#Examples)
 using MLJ
-
 
 LinearRegressor = @load LinearRegressor pkg=MultivariateStats
 linear_regressor = LinearRegressor()
@@ -196,10 +200,8 @@ linear_regressor = LinearRegressor()
 X, y = make_regression(100, 2) # synthetic data
 mach = machine(linear_regressor, X, y) |> fit!
 
-
 Xnew, _ = make_regression(3, 2)
 yhat = predict(mach, Xnew) # new predictions
-yhat_point = predict_mean(mach, Xnew) # new predictions
 ```
 
 See also
@@ -207,4 +209,68 @@ TODO: ADD REFERENCES
 """
 LinearRegressor
 
+"""
+$(MMI.doc_header(MultitargetLinearRegressor))
+
+`MultitargetLinearRegressor` assumes the target is a continuous variable
+whose conditional distribution is normal with constant variance, and whose
+expected value is a linear combination of the features. Linear coefficients
+are calculated using least squares. In this case, the output represents a
+response vector.
+Options exist to specify a bias term.
+
+# Training data
+
+In MLJ or MLJBase, bind an instance `model` to data with
+    mach = machine(model, X, y)
+
+Where
+
+- `X`: is any table of input features (eg, a `DataFrame`) whose columns
+  are of scitype `Continuous`; check the scitype with `schema(X)`
+
+- `y`: is the target, which can be any `AbstractMatrix` whose element
+  scitype is `Continuous`; check the scitype with `schema(y)`
+
+# Hyper-parameters
+
+- `bias=true`: include bias term if true, else fit without bias term
+
+# Operations
+
+- `predict(mach, Xnew)`: Return predictions of the target given new
+  features `Xnew` having the same Scitype as `X` above.
+
+# Fitted parameters
+
+The fields of `fitted_params(mach)` are:
+
+- `coefficients`: The linear coefficients determined by the model.
+- `intercept`: The intercept determined by the model.
+
+# Examples
+
+```
+using MLJ
+using MLJBase: augment_X
+using DataFrames
+
+LinearRegressor = @load MultitargetLinearRegressor pkg=MultivariateStats
+linear_regressor = LinearRegressor()
+
+X = augment_X(randn(100, 8), true)
+θ = randn((9,2))
+y = X * θ
+X, y = map(x -> DataFrame(x, :auto), (X, y))
+
+mach = machine(linear_regressor, X, y) |> fit!
+
+Xnew, _ = make_regression(3, 9)
+yhat = predict(mach, Xnew) # new predictions
+```
+
+See also
+TODO: ADD REFERENCES
+"""
+MultitargetLinearRegressor
 end
