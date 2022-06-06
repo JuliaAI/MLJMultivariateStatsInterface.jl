@@ -174,7 +174,7 @@ Where
 
 # Hyper-parameters
 
-- `bias=true`: include bias term if true, else fit without bias term
+- `bias=true`: Include the bias term if true, otherwise fit without bias term.
 
 # Operations
 
@@ -234,7 +234,7 @@ Where
 
 # Hyper-parameters
 
-- `bias=true`: include bias term if true, else fit without bias term
+- `bias=true`: Include the bias term if true, otherwise fit without bias term.
 
 # Operations
 
@@ -273,4 +273,160 @@ See also
 TODO: ADD REFERENCES
 """
 MultitargetLinearRegressor
+
+"""
+$(MMI.doc_header(RidgeRegressor))
+
+`RidgeRegressor` adds a quadratic penalty term to least squares regression,
+for regularization. Ridge regression is particularly useful in the case of
+multicollinearity.
+Options exist to specify a bias term, and to adjust the strength of the penalty term.
+
+# Training data
+
+In MLJ or MLJBase, bind an instance `model` to data with
+    mach = machine(model, X, y)
+
+Where
+
+- `X`: is any table of input features (eg, a `DataFrame`) whose columns
+  are of scitype `Continuous`; check the scitype with `schema(X)`
+
+- `y`: is the target, which can be any `AbstractVector` whose element
+  scitype is `Continuous`; check the scitype with `schema(y)`
+
+# Hyper-parameters
+
+- `lambda=1.0`: Is the non-negative parameter for the
+  regularization strength. If lambda is 0, ridge regression is equivalent
+  to linear least squares regression, and as lambda approaches infinity,
+  all the linear coefficients approach 0.
+
+- `bias=true`: Include the bias term if true, otherwise fit without bias term.
+
+# Operations
+
+- `predict(mach, Xnew)`: Return predictions of the target given new
+  features `Xnew` having the same Scitype as `X` above.
+
+# Fitted parameters
+
+The fields of `fitted_params(mach)` are:
+
+- `coefficients`: The linear coefficients determined by the model.
+- `intercept`: The intercept determined by the model.
+
+# Examples
+
+```
+using MLJ
+
+LinearRegressor = @load LinearRegressor pkg=MultivariateStats
+RidgeRegressor = @load RidgeRegressor pkg=MultivariateStats
+
+X, y = make_regression(100, 60) # synthetic data
+
+linear_regressor = LinearRegressor()
+mach = machine(linear_regressor, X, y) |> fit!
+llsq_coef = fitted_params(mach).coefficients
+
+ridge_regressor = RidgeRegressor(lambda=0)
+ridge_mach = machine(ridge_regressor, X, y) |> fit!
+coef = fitted_params(ridge_mach).coefficients
+difference = llsq_coef - coef
+@info "difference between λ=0 ridge and llsq" mean(difference) std(difference)
+
+
+ridge_regressor = RidgeRegressor(lambda=1.5)
+ridge_mach = machine(ridge_regressor, X, y) |> fit!
+
+Xnew, _ = make_regression(3, 60)
+yhat = predict(mach, Xnew) # new predictions
+```
+
+See also
+TODO: ADD REFERENCES
+"""
+RidgeRegressor
+
+"""
+$(MMI.doc_header(MultitargetRidgeRegressor))
+
+`MultitargetRidgeRegressor` adds a quadratic penalty term to least squares regression,
+for regularization. Ridge regression is particularly useful in the case of
+multicollinearity. In this case, the output represents a response vector.
+Options exist to specify a bias term, and to adjust the strength of the penalty term.
+
+# Training data
+
+In MLJ or MLJBase, bind an instance `model` to data with
+    mach = machine(model, X, y)
+
+Where
+
+- `X`: is any table of input features (eg, a `DataFrame`) whose columns
+  are of scitype `Continuous`; check the scitype with `schema(X)`
+
+- `y`: is the target, which can be any `AbstractMatrix` whose element
+  scitype is `Continuous`; check the scitype with `schema(y)`
+
+# Hyper-parameters
+
+- `lambda=1.0`: Is the non-negative parameter for the
+  regularization strength. If lambda is 0, ridge regression is equivalent
+  to linear least squares regression, and as lambda approaches infinity,
+  all the linear coefficients approach 0.
+
+- `bias=true`: Include the bias term if true, otherwise fit without bias term.
+
+# Operations
+
+- `predict(mach, Xnew)`: Return predictions of the target given new
+  features `Xnew` having the same Scitype as `X` above.
+
+# Fitted parameters
+
+The fields of `fitted_params(mach)` are:
+
+- `coefficients`: The linear coefficients determined by the model.
+- `intercept`: The intercept determined by the model.
+
+# Examples
+
+```
+using MLJ
+using MLJBase: augment_X
+using DataFrames
+
+LinearRegressor = @load MultitargetLinearRegressor pkg=MultivariateStats
+RidgeRegressor = @load MultitargetRidgeRegressor pkg=MultivariateStats
+
+X = augment_X(randn(100, 80), true)
+θ = randn((81,4))
+y = X * θ
+X, y = map(x -> DataFrame(x, :auto), (X, y))
+
+linear_regressor = LinearRegressor()
+mach = machine(linear_regressor, X, y) |> fit!
+llsq_coef = fitted_params(mach).coefficients
+
+ridge_regressor = RidgeRegressor(lambda=0)
+ridge_mach = machine(ridge_regressor, X, y) |> fit!
+coef = fitted_params(ridge_mach).coefficients
+difference = llsq_coef - coef
+@info "difference between λ=0 ridge and llsq" mean(difference) std(difference)
+
+
+ridge_regressor = RidgeRegressor(lambda=1.5)
+ridge_mach = machine(ridge_regressor, X, y) |> fit!
+
+Xnew, _ = make_regression(3, 60)
+yhat = predict(mach, Xnew) # new predictions
+```
+
+See also
+TODO: ADD REFERENCES
+"""
+MultitargetRidgeRegressor
+
 end
