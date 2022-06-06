@@ -429,6 +429,61 @@ TODO: ADD REFERENCES
 """
 MultitargetRidgeRegressor
 
+"""
+$(MMI.doc_header(PCA))
+
+`PCA`
+
+# Training data
+
+In MLJ or MLJBase, bind an instance `model` to data with
+    mach = machine(model, X)
+
+Where
+
+- `X`: is any table of input features (eg, a `DataFrame`) whose columns
+  are of scitype `Continuous`; check the scitype with `schema(X)`
+
+# Hyper-parameters
+
+# XXX: Would it be more consistent to use nothing or something as default?
+- `maxoutdim=0`: The maximum number of output dimensions. If not set, defaults to
+  0, where all components are kept (e.g., the number of components/output dimensions
+  is equal to the size of the smallest dimension of the training matrix)
+- `method=:auto`: The method to use to solve the problem. Choices are
+    - `:svd`: Support Vector Decomposition of the matrix.
+    - `:cov`: Covariance matrix decomposition.
+    - `:auto`: Use `:cov` if the matrices first dimension is smaller than its second dimension
+      otherwise use `:svd`
+- `pratio::Float64=0.99`: The ratio of variance preserved after the transformation
+- `mean=nothing`: if set to nothing(default) centering will be computed and applied,
+  if set to `0` no centering(assumed pre-centered), if a vector is passed,
+  the centering is done with that vector.
+
+# Operations
+
+- `predict(mach, Xnew)`: Return predictions of the target given new
+  features `Xnew` having the same Scitype as `X` above.
+
+# Fitted parameters
+
+TODO: Example, coeff, report
+
+The fields of `fitted_params(mach)` are:
+
+
+# Examples
+
+```
+using MLJ
+
+PCA = @load PCA pkg=MultivariateStats
+
+```
+
+See also
+TODO: ADD REFERENCES
+"""
 PCA
 KernelPCA
 ICA
