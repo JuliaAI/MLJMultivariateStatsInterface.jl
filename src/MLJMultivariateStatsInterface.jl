@@ -432,7 +432,9 @@ MultitargetRidgeRegressor
 """
 $(MMI.doc_header(PCA))
 
-`PCA`
+`PCA` Principal component analysis. Learns a linear transformation to
+project the data  on a lower dimensional space while preserving most of the initial
+variance.
 
 # Training data
 
