@@ -921,7 +921,7 @@ Where
 
 The fields of `fitted_params(mach)` are:
 
-BUG: RENAME
+BUG: RENAME, Make note on top of PR for inconsistency
 - `class_means`: The matrix comprised of class-specific means as
   columns (of size `(d,m)`), where d corresponds to input features and m corresponds to class.
 - `projection_matrix`: The matrix used to project `X` into a lower dimensional space.
