@@ -448,7 +448,6 @@ Where
 
 # Hyper-parameters
 
-# XXX: Would it be more consistent to use nothing or something as default?
 - `maxoutdim=0`: The maximum number of output dimensions. If not set, defaults to
   0, where all components are kept (e.g., the number of components/output dimensions
   is equal to the size of the smallest dimension of the training matrix)
@@ -464,7 +463,7 @@ Where
 
 # Operations
 
-- `predict(mach, Xnew)`: Return predictions of the target given new
+- `transform(mach, Xnew)`: Return predictions of the target given new
   features `Xnew` having the same Scitype as `X` above.
 
 # Fitted parameters
@@ -480,6 +479,10 @@ The fields of `fitted_params(mach)` are:
 using MLJ
 
 PCA = @load PCA pkg=MultivariateStats
+
+X, y = @load_iris
+model = PCA(maxoutdim=2)
+mach = machine(pca, X) |> fit!
 
 ```
 

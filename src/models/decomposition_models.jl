@@ -43,8 +43,8 @@ function MMI.fit(model::PCA, verbosity::Int, X)
     )
     cache = nothing
     report = (
-        indim=MS.size(fitresult,1),
-        outdim=MS.size(fitresult,2),
+        indim=MS.size(fitresult)[1],
+        outdim=MS.size(fitresult)[2],
         tprincipalvar=MS.tprincipalvar(fitresult),
         tresidualvar=MS.tresidualvar(fitresult),
         tvar=MS.var(fitresult),
