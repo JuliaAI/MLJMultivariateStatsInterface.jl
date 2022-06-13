@@ -468,10 +468,24 @@ Where
 
 # Fitted parameters
 
-TODO: Example, coeff, report
-
 The fields of `fitted_params(mach)` are:
 
+- `projection`: Returns the projection matrix (of size `(d, p)`).
+  Each column of the projection matrix corresponds to a principal component.
+  The principal components are arranged in descending order of
+  the corresponding variances.
+
+# Report
+
+The fields of `report(mach)` are:
+
+- `indim`: Dimensions of the provided data.
+- `outdim`: Dimensions of the transformed result.
+- `tprincipalvar`: Total variance of the principal components.
+- `tresidualvar`: Total residual variance.
+- `tvar`: Total observation variance (principal + residual variance).
+- `mean`: The mean vector (of length `d`).
+- `principalvars`: The variance of the principal components.
 
 # Examples
 
@@ -481,16 +495,172 @@ using MLJ
 PCA = @load PCA pkg=MultivariateStats
 
 X, y = @load_iris
-model = PCA(maxoutdim=2)
-mach = machine(pca, X) |> fit!
 
+model = PCA(maxoutdim=2)
+mach = machine(model, X) |> fit!
+
+projection = transform(mach, X)
 ```
 
 See also
 TODO: ADD REFERENCES
 """
 PCA
+"""
+$(MMI.doc_header(KernelPCA))
+
+`KernelPCA` Principal component analysis. Learns a linear transformation to
+project the data  on a lower dimensional space while preserving most of the initial
+variance.
+
+# Training data
+
+In MLJ or MLJBase, bind an instance `model` to data with
+    mach = machine(model, X)
+
+Where
+
+- `X`: is any table of input features (eg, a `DataFrame`) whose columns
+  are of scitype `Continuous`; check the scitype with `schema(X)`
+
+# Hyper-parameters
+
+- `maxoutdim=0`: The maximum number of output dimensions. If not set, defaults to
+  0, where all components are kept (e.g., the number of components/output dimensions
+  is equal to the size of the smallest dimension of the training matrix).
+- `kernel::Function=(x,y)->x'y`: The kernel function, takes in 2 vector arguments
+   x and y, returns a scalar value. Defaults to the dot product of X and Y.
+- `solver::Symbol=:auto`: solver to use for the eigenvalues, one of `:eig`(default),
+  `:eigs`.
+- `inverse::Bool=true`: perform calculations needed for inverse transform
+- `beta::Real=1.0`: strength of the ridge regression that learns the inverse transform
+  when inverse is true.
+- `tol::Real=0.0`: Convergence tolerance for eigs solver.
+- `maxiter::Int=300`: maximum number of iterations for eigs solver.
+
+# Operations
+
+- `transform(mach, Xnew)`: Return predictions of the target given new
+  features `Xnew` having the same Scitype as `X` above.
+
+# Fitted parameters
+
+The fields of `fitted_params(mach)` are:
+
+- `projection`: Returns the projection matrix (of size `(d, p)`).
+  Each column of the projection matrix corresponds to a principal component.
+  The principal components are arranged in descending order of
+  the corresponding variances.
+
+# Report
+
+The fields of `report(mach)` are:
+
+- `indim`: Dimensions of the provided data.
+- `outdim`: Dimensions of the transformed result.
+- `principalvars`: The variance of the principal components.
+
+# Examples
+
+```
+using MLJ
+using LinearAlgebra
+
+KPCA = @load KernelPCA pkg=MultivariateStats
+
+X, y = @load_iris
+
+function rbf_kernel(length_scale)
+    return (x,y) -> norm(x-y)^2 / ((2 * length_scale)^2)
+end
+
+model = KPCA(maxoutdim=2, kernel = rbf_kernel(1))
+mach = machine(model, X) |> fit!
+
+projection = transform(mach, X)
+```
+
+See also
+TODO: ADD REFERENCES
+"""
 KernelPCA
+"""
+$(MMI.doc_header(ICA))
+
+`ICA` Principal component analysis. Learns a linear transformation to
+project the data  on a lower dimensional space while preserving most of the initial
+variance.
+
+# Training data
+
+In MLJ or MLJBase, bind an instance `model` to data with
+    mach = machine(model, X)
+
+Where
+
+- `X`: is any table of input features (eg, a `DataFrame`) whose columns
+  are of scitype `Continuous`; check the scitype with `schema(X)`
+
+# Hyper-parameters
+
+- `maxoutdim=0`: The maximum number of output dimensions. If not set, defaults to
+  0, where all components are kept (e.g., the number of components/output dimensions
+  is equal to the size of the smallest dimension of the training matrix).
+- `kernel::Function=(x,y)->x'y`: The kernel function, takes in 2 vector arguments
+   x and y, returns a scalar value. Defaults to the dot product of X and Y.
+- `solver::Symbol=:auto`: solver to use for the eigenvalues, one of `:eig`(default),
+  `:eigs`.
+- `inverse::Bool=true`: perform calculations needed for inverse transform
+- `beta::Real=1.0`: strength of the ridge regression that learns the inverse transform
+  when inverse is true.
+- `tol::Real=0.0`: Convergence tolerance for eigs solver.
+- `maxiter::Int=300`: maximum number of iterations for eigs solver.
+
+# Operations
+
+- `transform(mach, Xnew)`: Return predictions of the target given new
+  features `Xnew` having the same Scitype as `X` above.
+
+# Fitted parameters
+
+The fields of `fitted_params(mach)` are:
+
+- `projection`: Returns the projection matrix (of size `(d, p)`).
+  Each column of the projection matrix corresponds to a principal component.
+  The principal components are arranged in descending order of
+  the corresponding variances.
+
+# Report
+
+The fields of `report(mach)` are:
+
+- `indim`: Dimensions of the provided data.
+- `outdim`: Dimensions of the transformed result.
+- `principalvars`: The variance of the principal components.
+
+# Examples
+
+```
+using MLJ
+using LinearAlgebra
+
+KPCA = @load KernelPCA pkg=MultivariateStats
+
+X, y = @load_iris
+
+function rbf_kernel(length_scale)
+    return (x,y) -> norm(x-y)^2 / ((2 * length_scale)^2)
+end
+
+model = KPCA(maxoutdim=2, kernel = rbf_kernel(1))
+mach = machine(model, X) |> fit!
+
+projection = transform(mach, X)
+```
+
+See also
+TODO: ADD REFERENCES
+"""
 ICA
 LDA
 BayesianLDA

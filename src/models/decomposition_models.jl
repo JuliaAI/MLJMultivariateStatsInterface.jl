@@ -43,6 +43,7 @@ function MMI.fit(model::PCA, verbosity::Int, X)
     )
     cache = nothing
     report = (
+        # TODO: Make PR to MultivariateStats
         indim=MS.size(fitresult)[1],
         outdim=MS.size(fitresult)[2],
         tprincipalvar=MS.tprincipalvar(fitresult),
