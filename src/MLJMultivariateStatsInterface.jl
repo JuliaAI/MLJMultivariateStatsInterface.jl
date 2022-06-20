@@ -170,7 +170,7 @@ Where
   are of scitype `Continuous`; check the scitype with `schema(X)`
 
 - `y`: is the target, which can be any `AbstractVector` whose element
-  scitype is `Continuous`; check the scitype with `schema(y)`
+  scitype is `Continuous`; check the scitype with `scitype(y)`
 
 # Hyper-parameters
 
@@ -196,7 +196,6 @@ using MLJ
 LinearRegressor = @load LinearRegressor pkg=MultivariateStats
 linear_regressor = LinearRegressor()
 
-
 X, y = make_regression(100, 2) # synthetic data
 mach = machine(linear_regressor, X, y) |> fit!
 
@@ -205,7 +204,7 @@ yhat = predict(mach, Xnew) # new predictions
 ```
 
 See also
-TODO: ADD REFERENCES
+[`MultitargetLinearRegressor`](@ref), [`RidgeRegressor`](@ref), [`MultitargetRidgeRegressor`](@ref)
 """
 LinearRegressor
 
@@ -230,7 +229,7 @@ Where
   are of scitype `Continuous`; check the scitype with `schema(X)`
 
 - `y`: is the target, which can be any table of responses whose element
-  scitype is `Continuous`; check the scitype with `schema(y)`
+  scitype is `Continuous`; check the scitype with `scitype(y)`
 
 # Hyper-parameters
 
@@ -270,7 +269,7 @@ yhat = predict(mach, Xnew) # new predictions
 ```
 
 See also
-TODO: ADD REFERENCES
+[`LinearRegressor`](@ref), [`RidgeRegressor`](@ref), [`MultitargetRidgeRegressor`](@ref)
 """
 MultitargetLinearRegressor
 
@@ -293,7 +292,7 @@ Where
   are of scitype `Continuous`; check the scitype with `schema(X)`
 
 - `y`: is the target, which can be any `AbstractVector` whose element
-  scitype is `Continuous`; check the scitype with `schema(y)`
+  scitype is `Continuous`; check the scitype with `scitype(y)`
 
 # Hyper-parameters
 
@@ -345,7 +344,7 @@ yhat = predict(mach, Xnew) # new predictions
 ```
 
 See also
-TODO: ADD REFERENCES
+[`LinearRegressor`](@ref), [`MultitargetLinearRegressor`](@ref), [`MultitargetRidgeRegressor`](@ref)
 """
 RidgeRegressor
 
@@ -368,7 +367,7 @@ Where
   are of scitype `Continuous`; check the scitype with `schema(X)`
 
 - `y`: is the target, which can be any table of responses whose element
-  scitype is `Continuous`; check the scitype with `schema(y)`
+  scitype is `Continuous`; check the scitype with `scitype(y)`
 
 # Hyper-parameters
 
@@ -425,7 +424,7 @@ yhat = predict(mach, Xnew) # new predictions
 ```
 
 See also
-TODO: ADD REFERENCES
+[`LinearRegressor`](@ref), [`MultitargetLinearRegressor`](@ref), [`RidgeRegressor`](@ref)
 """
 MultitargetRidgeRegressor
 
@@ -503,7 +502,7 @@ projection = transform(mach, X)
 ```
 
 See also
-TODO: ADD REFERENCES
+[`KernelPCA`](@ref), [`ICA`](@ref), [`FactorAnalysis`](@ref), [`PPCA`](@ref)
 """
 PCA
 """
@@ -580,7 +579,7 @@ projection = transform(mach, X)
 ```
 
 See also
-TODO: ADD REFERENCES
+[`PCA`](@ref), [`ICA`](@ref), [`FactorAnalysis`](@ref), [`PPCA`](@ref)
 """
 KernelPCA
 """
@@ -653,7 +652,7 @@ projection = transform(mach, X)
 ```
 
 See also
-TODO: ADD REFERENCES
+[`PCA`](@ref), [`KernelPCA`](@ref), [`FactorAnalysis`](@ref), [`PPCA`](@ref)
 """
 ICA
 """
@@ -681,7 +680,7 @@ Where
   are of scitype `Continuous`; check the scitype with `schema(X)`
 - `y`: is the target, which can be any `AbstractVector` whose element
   scitype is `<:OrderedFactor(2)` or `<:Multiclass(2)`; check the scitype
-  with `schema(y)`
+  with `scitype(y)`
 
 # Hyper-parameters
 
@@ -753,7 +752,7 @@ labels = predict_mode(mach, x)
 ```
 
 See also
-TODO: ADD REFERENCES
+[`BayesianLDA`](@ref), [`SubspaceLDA`](@ref), [`BayesianSubspaceLDA`](@ref)
 """
 LDA
 """
@@ -786,7 +785,7 @@ Where
   are of scitype `Continuous`; check the scitype with `schema(X)`
 - `y`: is the target, which can be any `AbstractVector` whose element
   scitype is `<:OrderedFactor(2)` or `<:Multiclass(2)`; check the scitype
-  with `schema(y)`
+  with `scitype(y)`
 
 # Hyper-parameters
 
@@ -861,7 +860,7 @@ labels = predict_mode(mach, x)
 ```
 
 See also
-TODO: ADD REFERENCES
+[`LDA`](@ref), [`SubspaceLDA`](@ref), [`BayesianSubspaceLDA`](@ref)
 """
 BayesianLDA
 """
@@ -893,7 +892,7 @@ Where
   are of scitype `Continuous`; check the scitype with `schema(X)`
 - `y`: is the target, which can be any `AbstractVector` whose element
   scitype is `<:OrderedFactor(2)` or `<:Multiclass(2)`; check the scitype
-  with `schema(y)`
+  with `scitype(y)`
 
 # Hyper-parameters
 
@@ -956,7 +955,7 @@ labels = predict_mode(mach, X)
 ```
 
 See also
-TODO: ADD REFERENCES
+[`LDA`](@ref), [`BayesianLDA`](@ref), [`BayesianSubspaceLDA`](@ref)
 """
 SubspaceLDA
 """
@@ -987,7 +986,7 @@ Where
   are of scitype `Continuous`; check the scitype with `schema(X)`
 - `y`: is the target, which can be any `AbstractVector` whose element
   scitype is `<:OrderedFactor(2)` or `<:Multiclass(2)`; check the scitype
-  with `schema(y)`
+  with `scitype(y)`
 
 # Hyper-parameters
 
@@ -1052,7 +1051,7 @@ labels = predict_mode(mach, X)
 ```
 
 See also
-TODO: ADD REFERENCES
+[`LDA`](@ref), [`BayesianLDA`](@ref), [`SubspaceLDA`](@ref)
 """
 BayesianSubspaceLDA
 """
@@ -1124,7 +1123,7 @@ projection = transform(mach, X)
 ```
 
 See also
-TODO: ADD REFERENCES
+[`KernelPCA`](@ref), [`ICA`](@ref), [`PPCA`](@ref), [`PCA`](@ref)
 """
 FactorAnalysis
 """
@@ -1196,7 +1195,7 @@ projection = transform(mach, X)
 ```
 
 See also
-TODO: ADD REFERENCES
+[`KernelPCA`](@ref), [`ICA`](@ref), [`FactorAnalysis`](@ref), [`PCA`](@ref)
 """
 PPCA
 end
