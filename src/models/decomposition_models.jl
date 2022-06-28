@@ -340,8 +340,13 @@ model_types = [
 ]
 
 for (M, MFitResultType) in model_types
-    @eval function MMI.fitted_params(::$M, fr)
-        return (projection=copy(MS.projection(fr)),)
+
+    if M !== ICA # special cased below
+        quote
+            function MMI.fitted_params(::$M, fr)
+                return (projection=copy(MS.projection(fr)),)
+            end
+        end |> eval
     end
 
     @eval function MMI.transform(::$M, fr::$MFitResultType, X)
@@ -360,3 +365,5 @@ for (M, MFitResultType) in model_types
         end
     end
 end
+
+MMI.fitted_params(::ICA, fr) = (projection=copy(fr.W), mean = copy(MS.mean(fr)))

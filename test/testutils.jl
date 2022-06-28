@@ -39,4 +39,8 @@ function test_composition_model(ms_model, mlj_model, X, X_array ; test_inverse=t
         Xinv_mlj = matrix(Xinv_mlj_table)
         @test Xinv_ms ≈ Xinv_mlj
     end
+
+    # smoke test for issue #42
+    fp = MLJBase.fitted_params(mlj_model, fitresult)
+    :projection in keys(fp)
 end
