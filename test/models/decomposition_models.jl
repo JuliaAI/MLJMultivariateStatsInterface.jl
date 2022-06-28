@@ -75,7 +75,6 @@ end
     test_composition_model(ica_ms, ica_mlj, X, X_array, test_inverse=false)
 end
 
-
 @testset "PPCA" begin
     X_array = matrix(X)
     tolerance = 5.0
