@@ -1,5 +1,5 @@
-# MLJ <> MultivariateStats.jl
-Repository implementing MLJ interface for 
+# MLJMultivariateStatsInterface.jl
+Repository implementing [MLJ](https://alan-turing-institute.github.io/MLJ.jl/dev/) interface for 
 [MultivariateStats](https://github.com/JuliaStats/MultivariateStats.jl) models.
 
 
