@@ -153,24 +153,25 @@ metadata_pkg.(
 """
 $(MMI.doc_header(LinearRegressor))
 
-`LinearRegressor` assumes the target is a continuous variable
-whose conditional distribution is normal with constant variance, and whose
-expected value is a linear combination of the features. Linear coefficients
-are calculated using least squares.
-Options exist to specify a bias term.
+`LinearRegressor` assumes the target is a continuous variable and trains a linear
+prediction function using the least squares algorithm. Options exist to specify
+a bias term.`
 
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X, y)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
 
 - `y`: is the target, which can be any `AbstractVector` whose element
   scitype is `Continuous`; check the scitype with `scitype(y)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
@@ -211,25 +212,25 @@ LinearRegressor
 """
 $(MMI.doc_header(MultitargetLinearRegressor))
 
-`MultitargetLinearRegressor` assumes the target is a continuous variable
-whose conditional distribution is normal with constant variance, and whose
-expected value is a linear combination of the features. Linear coefficients
-are calculated using least squares. In this case, the output represents a
-response vector.
-Options exist to specify a bias term.
+`MultitargetLinearRegressor` assumes the target variable is vector-valued with
+continuous components.  It trains a linear prediction function using the
+least squares algorithm. Options exist to specify a bias term.
 
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X, y)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
 
 - `y`: is the target, which can be any table of responses whose element
   scitype is `Continuous`; check the scitype with `scitype(y)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
@@ -238,7 +239,7 @@ Where
 # Operations
 
 - `predict(mach, Xnew)`: Return predictions of the target given new
-  features `Xnew` having the same Scitype as `X` above.
+  features `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -284,15 +285,18 @@ Options exist to specify a bias term, and to adjust the strength of the penalty 
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X, y)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
 
 - `y`: is the target, which can be any `AbstractVector` whose element
   scitype is `Continuous`; check the scitype with `scitype(y)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
@@ -306,7 +310,7 @@ Where
 # Operations
 
 - `predict(mach, Xnew)`: Return predictions of the target given new
-  features `Xnew` having the same Scitype as `X` above.
+  features `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -359,15 +363,18 @@ Options exist to specify a bias term, and to adjust the strength of the penalty 
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X, y)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
 
 - `y`: is the target, which can be any table of responses whose element
   scitype is `Continuous`; check the scitype with `scitype(y)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
@@ -381,7 +388,7 @@ Where
 # Operations
 
 - `predict(mach, Xnew)`: Return predictions of the target given new
-  features `Xnew` having the same Scitype as `X` above.
+  features `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -438,12 +445,15 @@ variance.
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
@@ -463,16 +473,14 @@ Where
 # Operations
 
 - `transform(mach, Xnew)`: Return lower dimensional projection of the target given new
-  features `Xnew` having the same Scitype as `X` above.
+  features `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
 The fields of `fitted_params(mach)` are:
 
-- `projection`: Returns the projection matrix (of size `(d, p)`).
-  Each column of the projection matrix corresponds to a principal component.
-  The principal components are arranged in descending order of
-  the corresponding variances.
+- `projection`: Returns the projection matrix, which has size `(p, p_out)`), where
+   `p` and `p_out` are the number of features of the input and ouput respectively.
 
 # Report
 
@@ -514,41 +522,42 @@ operations of PCA are performed in a [reproducing Hilbert space](https://en.wiki
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
-- `maxoutdim=0`: The maximum number of output dimensions. If not set, defaults to
-  0, where all components are kept (e.g., the number of components/output dimensions
-  is equal to the size of the smallest dimension of the training matrix).
+- `maxoutdim=0`: Controls the the dimension (number of columns) of the output,
+   `outdim`. Specifically,  `outdim = min(n, indim, maxoutdim)`, where `n` is the
+   number of observations and `indim` the input dimension.
 - `kernel::Function=(x,y)->x'y`: The kernel function, takes in 2 vector arguments
-   x and y, returns a scalar value. Defaults to the dot product of X and Y.
-- `solver::Symbol=:auto`: solver to use for the eigenvalues, one of `:eig`(default),
-  `:eigs`.
+   x and y, returns a scalar value. Defaults to the dot product of `x` and `y`.
+- `solver::Symbol=:auto`: solver to use for the eigenvalues, one of `:eig`(default, uses `LinearAlgebra.eigen`),
+  `:eigs`(uses `Arpack.eigs`).
 - `inverse::Bool=true`: perform calculations needed for inverse transform
 - `beta::Real=1.0`: strength of the ridge regression that learns the inverse transform
   when inverse is true.
-- `tol::Real=0.0`: Convergence tolerance for eigs solver.
-- `maxiter::Int=300`: maximum number of iterations for eigs solver.
+- `tol::Real=0.0`: Convergence tolerance for eigenvalue solver.
+- `maxiter::Int=300`: maximum number of iterations for eigenvalue solver.
 
 # Operations
 
 - `transform(mach, Xnew)`: Return predictions of the target given new
-  features `Xnew` having the same Scitype as `X` above.
+  features `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
 The fields of `fitted_params(mach)` are:
 
-- `projection`: Returns the projection matrix (of size `(d, p)`).
-  Each column of the projection matrix corresponds to a principal component.
-  The principal components are arranged in descending order of
-  the corresponding variances.
+- `projection`: Returns the projection matrix, which has size `(p, p_out)`), where
+   `p` and `p_out` are the number of features of the input and ouput respectively.
 
 # Report
 
@@ -592,12 +601,15 @@ non-Gaussian and independent from each other.
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
@@ -618,7 +630,7 @@ Where
 # Operations
 
 - `transform(mach, Xnew)`: Return lower dimensional projection of the target given new
-  features `Xnew` having the same Scitype as `X` above.
+  features `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -672,15 +684,18 @@ computed distances(based on a distance metric) in the transformed space of rowáµ
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
 - `y`: is the target, which can be any `AbstractVector` whose element
   scitype is `<:OrderedFactor(2)` or `<:Multiclass(2)`; check the scitype
   with `scitype(y)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
@@ -704,7 +719,7 @@ Where
 # Operations
 
 - `transform(mach, Xnew)`: Return lower dimensional projection of the target given new
-  features `Xnew` having Scitype as `X` above.
+  features `Xnew` having scitype as `X` above.
 - `predict(mach, Xnew)`: Return predictions of the target given
   features `Xnew` having the same scitype as `X` above. Predictions
   are probabilistic.
@@ -777,15 +792,18 @@ http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.89.7068&rep=rep1&type=p
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
 - `y`: is the target, which can be any `AbstractVector` whose element
   scitype is `<:OrderedFactor(2)` or `<:Multiclass(2)`; check the scitype
   with `scitype(y)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
@@ -811,7 +829,7 @@ value `regcoef * eigmax(Sw)` where `Sw` is the within-class covariance estimator
 # Operations
 
 - `transform(mach, Xnew)`: Return lower dimensional projection of the target given new
-  features `Xnew` having Scitype as `X` above.
+  features `Xnew` having scitype as `X` above.
 - `predict(mach, Xnew)`: Return predictions of the target given
   features `Xnew` having the same scitype as `X` above. Predictions
   are probabilistic.
@@ -884,15 +902,18 @@ computed distances(based on a distance metric) in the transformed space of rowáµ
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
 - `y`: is the target, which can be any `AbstractVector` whose element
   scitype is `<:OrderedFactor(2)` or `<:Multiclass(2)`; check the scitype
   with `scitype(y)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
@@ -908,7 +929,7 @@ Where
 # Operations
 
 - `transform(mach, Xnew)`: Return lower dimensional projection of the target given new
-  features `Xnew` having Scitype as `X` above.
+  features `Xnew` having scitype as `X` above.
 - `predict(mach, Xnew)`: Return predictions of the target given
   features `Xnew` having the same scitype as `X` above. Predictions
   are probabilistic.
@@ -978,15 +999,18 @@ multivariate Gaussian class-conditional distribution
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
 - `y`: is the target, which can be any `AbstractVector` whose element
   scitype is `<:OrderedFactor(2)` or `<:Multiclass(2)`; check the scitype
   with `scitype(y)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
@@ -1004,7 +1028,7 @@ Where
 # Operations
 
 - `transform(mach, Xnew)`: Return lower dimensional projection of the target given new
-  features `Xnew` having Scitype as `X` above.
+  features `Xnew` having scitype as `X` above.
 - `predict(mach, Xnew)`: Return predictions of the target given
   features `Xnew` having the same scitype as `X` above. Predictions
   are probabilistic.
@@ -1064,12 +1088,15 @@ the covariance of conditional distribution of the observed variable given the la
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
@@ -1087,7 +1114,7 @@ Where
 # Operations
 
 - `transform(mach, Xnew)`: Return predictions of the target given new
-  features `Xnew` having the same Scitype as `X` above.
+  features `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -1138,12 +1165,15 @@ latent variable mode.
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
+
     mach = machine(model, X)
 
 Where
 
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check the scitype with `schema(X)`
+  are of scitype `Continuous`; check the scitypes with `schema(X)`
+
+Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
