@@ -457,9 +457,9 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
-- `maxoutdim=0`: The maximum number of output dimensions. If not set, defaults to
-  0, where all components are kept (e.g., the number of components/output dimensions
-  is equal to the size of the smallest dimension of the training matrix)
+- `maxoutdim=0`: Controls the the dimension (number of columns) of the output,
+   `outdim`. Specifically,  `outdim = min(n, indim, maxoutdim)`, where `n` is the
+   number of observations and `indim` the input dimension.
 - `method=:auto`: The method to use to solve the problem. Choices are
     - `:svd`: Support Vector Decomposition of the matrix.
     - `:cov`: Covariance matrix decomposition.
@@ -472,8 +472,7 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return lower dimensional projection of the target given new
-  features `Xnew` having the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -485,9 +484,11 @@ The fields of `fitted_params(mach)` are:
 # Report
 
 The fields of `report(mach)` are:
+`outdim = min(n, indim, maxoutdim)`, where `n` is the
+   number of observations and `indim` the input dimension.
 
-- `indim`: Dimensions of the provided data.
-- `outdim`: Dimensions of the transformed result.
+- `indim`: The input dimensions.
+- `outdim`: `min(n, indim, maxoutdim)`, where `n` is the number of observations.
 - `tprincipalvar`: Total variance of the principal components.
 - `tresidualvar`: Total residual variance.
 - `tvar`: Total observation variance (principal + residual variance).
@@ -506,7 +507,7 @@ X, y = @load_iris
 model = PCA(maxoutdim=2)
 mach = machine(model, X) |> fit!
 
-projection = transform(mach, X)
+Xproj = transform(mach, X)
 ```
 
 See also
@@ -549,8 +550,7 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return predictions of the target given new
-  features `Xnew` having the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -563,8 +563,8 @@ The fields of `fitted_params(mach)` are:
 
 The fields of `report(mach)` are:
 
-- `indim`: Dimensions of the provided data.
-- `outdim`: Dimensions of the transformed result.
+- `indim`: The input dimensions.
+- `outdim`: `min(n, indim, maxoutdim)`, where `n` is the number of observations.
 - `principalvars`: The variance of the principal components.
 
 # Examples
@@ -584,7 +584,7 @@ end
 model = KPCA(maxoutdim=2, kernel = rbf_kernel(1))
 mach = machine(model, X) |> fit!
 
-projection = transform(mach, X)
+Xproj = transform(mach, X)
 ```
 
 See also
@@ -594,9 +594,9 @@ KernelPCA
 """
 $(MMI.doc_header(ICA))
 
-`ICA` is a computational technique for separating a multivariate signal into
-additive subcomponents, with the assumption that the subcomponents are
-non-Gaussian and independent from each other.
+`ICA` (independent component analysis) is a computational technique for separating a
+multivariate signal into additive subcomponents, with the assumption that the subcomponents
+are non-Gaussian and independent from each other.
 
 # Training data
 
@@ -618,34 +618,34 @@ Train the machine using `fit!(mach, rows=...)`.
 - `fun::Symbol=:tanh`: The approximate neg-entropy function, one of `:tanh`, `:gaus`.
 - `do_whiten::Bool=true`: Whether or not to perform pre-whitening.
 - `maxiter::Int=100`: The maximum number of iterations.
-- `tol::Real=1e-6`: The convergence tolerance for change in matrix W.
+- `tol::Real=1e-6`: The convergence tolerance for change in the unmixing matrix W.
 - `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: mean to use, if nothing (default)
-   centering is computed and applied, if zero, no centering, a vector of means can
+   centering is computed and applied, if zero, no centering; otherwise a vector of means can
    be passed.
-- `winit::Union{Nothing,Matrix{<:Real}}=nothing`: Initial guess for matrix `W` either
-   an empty matrix (random initilization of `W`), a matrix of size `k × k` (if `do_whiten`
-   is true), a matrix of size `m × k` otherwise. If unspecified i.e `nothing` an empty
-   `Matrix{<:Real}` is used.
+- `winit::Union{Nothing,Matrix{<:Real}}=nothing`: Initial guess for the unmixing matrix
+   `W`: either an empty matrix (for random initilization of `W`), a matrix of size `m × k`
+   (if `do_whiten` is true), or a matrix of size `m × k`. Here `m` is the number
+   of components (columns) of the input.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return lower dimensional projection of the target given new
-  features `Xnew` having the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return the component-separated version of input
+   `Xnew`, which should have the same scitype as `X` above.
 
 # Fitted parameters
 
 The fields of `fitted_params(mach)` are:
 
- BUG: Does not have a projection class. It would also be cool to see the whitened
-matrix in fitted_params, to show how the covariance is the identity
+# TODO: Now that this is fixed, document
 
 # Report
 
 The fields of `report(mach)` are:
 
-- `indim`: Dimensions of the provided data.
-- `outdim`: Dimensions of the transformed result.
-- `mean`: The mean vector.
+- `indim`: Dimension (number of columns/components) of the training
+   data and new data to be transformed.
+- `outdim`: Dimension of transformed data (number of separated components).
+- `mean`: The mean vector, which has length `indim`.
 
 # Examples
 
@@ -660,7 +660,7 @@ X, y = @load_iris
 model = ICA(k = 2, tol=0.1)
 mach = machine(model, X) |> fit!
 
-projection = transform(mach, X)
+Xproj = transform(mach, X)
 ```
 
 See also
@@ -718,8 +718,7 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return lower dimensional projection of the target given new
-  features `Xnew` having scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
 - `predict(mach, Xnew)`: Return predictions of the target given
   features `Xnew` having the same scitype as `X` above. Predictions
   are probabilistic.
@@ -761,7 +760,7 @@ X, y = @load_iris
 model = LDA()
 mach = machine(model, X, y) |> fit!
 
-projection = transform(mach, X)
+Xproj = transform(mach, X)
 y_hat = predict(mach, x)
 labels = predict_mode(mach, x)
 ```
@@ -828,8 +827,7 @@ value `regcoef * eigmax(Sw)` where `Sw` is the within-class covariance estimator
 
 # Operations
 
-- `transform(mach, Xnew)`: Return lower dimensional projection of the target given new
-  features `Xnew` having scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
 - `predict(mach, Xnew)`: Return predictions of the target given
   features `Xnew` having the same scitype as `X` above. Predictions
   are probabilistic.
@@ -872,7 +870,7 @@ X, y = @load_iris
 model = BLDA()
 mach = machine(model, X, y) |> fit!
 
-projection = transform(mach, X)
+Xproj = transform(mach, X)
 y_hat = predict(mach, x)
 labels = predict_mode(mach, x)
 ```
@@ -928,8 +926,7 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return lower dimensional projection of the target given new
-  features `Xnew` having scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
 - `predict(mach, Xnew)`: Return predictions of the target given
   features `Xnew` having the same scitype as `X` above. Predictions
   are probabilistic.
@@ -970,7 +967,7 @@ X, y = @load_iris
 model = sLDA()
 mach = machine(model, X, y) |> fit!
 
-projection = transform(mach, X)
+Xproj = transform(mach, X)
 y_hat = predict(mach, X)
 labels = predict_mode(mach, X)
 ```
@@ -1027,8 +1024,7 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return lower dimensional projection of the target given new
-  features `Xnew` having scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
 - `predict(mach, Xnew)`: Return predictions of the target given
   features `Xnew` having the same scitype as `X` above. Predictions
   are probabilistic.
@@ -1069,7 +1065,7 @@ X, y = @load_iris
 model = bsLDA()
 mach = machine(model, X, y) |> fit!
 
-projection = transform(mach, X)
+Xproj = transform(mach, X)
 y_hat = predict(mach, X)
 labels = predict_mode(mach, X)
 ```
@@ -1101,8 +1097,9 @@ Train the machine using `fit!(mach, rows=...)`.
 # Hyper-parameters
 
 - `method::Symbol=:cm`: Method to use to solve the problem, one of `:ml`, `:em`, `:bayes`.
-- `maxoutdim::Int=0`: Maximum number of output dimensions, uses max(no_of_features - 1, 1)
-    if 0 (default).
+- `maxoutdim=0`: Controls the the dimension (number of columns) of the output,
+   `outdim`. Specifically,  `outdim = min(n, indim, maxoutdim)`, where `n` is the
+   number of observations and `indim` the input dimension.
 - `maxiter::Int=1000`: Maximum number of iterations.
 - `tol::Real=1e-6`: Convergence tolerance.
 - `eta::Real=tol`: Variance lower bound.
@@ -1113,8 +1110,7 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return predictions of the target given new
-  features `Xnew` having the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -1127,8 +1123,8 @@ The fields of `fitted_params(mach)` are:
 
 The fields of `report(mach)` are:
 
-- `indim`: Dimensions of the provided data.
-- `outdim`: Dimensions of the transformed result.
+- `indim`: The input dimensions.
+- `outdim`: `min(n, indim, maxoutdim)`, where `n` is the number of observations.
 - `variance`: The variance of the factors.
 - `covariance_matrix`: The estimated covariance matrix.
 - `mean`: The mean vector.
@@ -1146,7 +1142,7 @@ X, y = @load_iris
 model = FA(maxoutdim=2)
 mach = machine(model, X) |> fit!
 
-projection = transform(mach, X)
+Xproj = transform(mach, X)
 ```
 
 See also
@@ -1177,8 +1173,9 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
-- `maxoutdim::Int=0`: The maximum number of output dimensions, uses max(no_of_features - 1, 1)
-    if 0 (default).
+- `maxoutdim=0`: Controls the the dimension (number of columns) of the output,
+   `outdim`. Specifically,  `outdim = min(n, indim, maxoutdim)`, where `n` is the
+   number of observations and `indim` the input dimension.
 - `method::Symbol=:ml`: The method to use to solve the problem, one of `:ml`, `:em`, `:bayes`.
 - `maxiter::Int=1000`: The maximum number of iterations.
 - `tol::Real=1e-6`: The convergence tolerance.
@@ -1189,8 +1186,7 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return predictions of the target given new
-  features `Xnew` having the same Scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -1203,8 +1199,8 @@ The fields of `fitted_params(mach)` are:
 
 The fields of `report(mach)` are:
 
-- `indim`: Dimensions of the provided data.
-- `outdim`: Dimensions of the transformed result.
+- `indim`: The input dimensions.
+- `outdim`: `min(n, indim, maxoutdim)`, where `n` is the number of observations.
 - `tvat`: The variance of the components.
 - `loadings`: The models loadings, weights for each variable used when calculating
    principal components.
@@ -1221,7 +1217,7 @@ X, y = @load_iris
 model = PPCA(maxoutdim=2)
 mach = machine(model, X) |> fit!
 
-projection = transform(mach, X)
+Xproj = transform(mach, X)
 ```
 
 See also
