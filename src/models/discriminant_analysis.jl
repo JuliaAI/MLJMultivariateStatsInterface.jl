@@ -234,8 +234,7 @@ function MMI.fit(model::BayesianLDA, ::Int, X, y)
 end
 
 function _matrix_transpose(::Union{LDA,BayesianLDA}, X)
-    # MultivariateStats 9.0 is not supporting adjoints
-    return MMI.matrix(X, transpose=true)
+    return MMI.matrix(X)'
 end
 
 @inline function _check_lda_priors(priors, nc, nclasses, integers_seen)
