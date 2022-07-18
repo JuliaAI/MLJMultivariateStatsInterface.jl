@@ -88,10 +88,7 @@ const BayesianSubspaceLDA_DESCR = """
     dimensional space of dimension `nc-1` such that the trace of the transformed
     between-class scatter matrix(`Pᵀ*Sb*P`) is maximized relative to the trace of the
     transformed within-class scatter matrix (`Pᵀ*Sw*P`). The projection matrix is scaled
-    such that `Pᵀ*Sw*P = mult*I` or `Pᵀ*Σw*P=mult/(n-nc)*I` (where `n` is the number of
-    training samples, `mult` is  one of `n` or `1` depending on whether `Sb` is normalized,
-    `Σw` is the within-class covariance matrix, and `nc` is the number of unique classes in
-    `y`) and also obeys `Wᵀ*Sb*p = λ*Wᵀ*Sw*p`, for every column `p` in `P`.
+    such that `Pᵀ*Sw*P = mult*I` or `Pᵀ*Σw*P=mult/(n-nc)*I` and also obeys `Wᵀ*Sb*p = λ*Wᵀ*Sw*p`, for every column `p` in `P`.
     Posterior class probability distibution are derived by applying Bayes rule with a
     multivariate Gaussian class-conditional distribution
     """
@@ -151,6 +148,7 @@ metadata_pkg.(
 )
 
 """
+
 $(MMI.doc_header(LinearRegressor))
 
 `LinearRegressor` assumes the target is a continuous variable and trains a linear
@@ -210,6 +208,7 @@ See also
 LinearRegressor
 
 """
+
 $(MMI.doc_header(MultitargetLinearRegressor))
 
 `MultitargetLinearRegressor` assumes the target variable is vector-valued with
@@ -275,6 +274,7 @@ See also
 MultitargetLinearRegressor
 
 """
+
 $(MMI.doc_header(RidgeRegressor))
 
 `RidgeRegressor` adds a quadratic penalty term to least squares regression,
@@ -353,6 +353,7 @@ See also
 RidgeRegressor
 
 """
+
 $(MMI.doc_header(MultitargetRidgeRegressor))
 
 `MultitargetRidgeRegressor` adds a quadratic penalty term to least squares regression,
@@ -436,6 +437,7 @@ See also
 MultitargetRidgeRegressor
 
 """
+
 $(MMI.doc_header(PCA))
 
 `PCA` Principal component analysis. Learns a linear transformation to
@@ -472,14 +474,14 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
 The fields of `fitted_params(mach)` are:
 
-- `projection`: Returns the projection matrix, which has size `(p, p_out)`), where
-   `p` and `p_out` are the number of features of the input and ouput respectively.
+- `projection`: Returns the projection matrix, which has size `(indim, outdim)`), where
+   `indim` and `outdim` are the number of features of the input and ouput respectively.
 
 # Report
 
@@ -492,7 +494,7 @@ The fields of `report(mach)` are:
 - `tprincipalvar`: Total variance of the principal components.
 - `tresidualvar`: Total residual variance.
 - `tvar`: Total observation variance (principal + residual variance).
-- `mean`: The mean vector (of length `d`).
+- `mean`: The mean of the untransformed training data, of length `in_dim`.
 - `principalvars`: The variance of the principal components.
 
 # Examples
@@ -514,7 +516,9 @@ See also
 [`KernelPCA`](@ref), [`ICA`](@ref), [`FactorAnalysis`](@ref), [`PPCA`](@ref)
 """
 PCA
+
 """
+
 $(MMI.doc_header(KernelPCA))
 
 `KernelPCA` Kernel principal component analysis. Using a kernel, the linear
@@ -550,14 +554,14 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
 The fields of `fitted_params(mach)` are:
 
-- `projection`: Returns the projection matrix, which has size `(p, p_out)`), where
-   `p` and `p_out` are the number of features of the input and ouput respectively.
+- `projection`: Returns the projection matrix, which has size `(indim, outdim)`), where
+   `indim` and `outdim` are the number of features of the input and ouput respectively.
 
 # Report
 
@@ -591,7 +595,9 @@ See also
 [`PCA`](@ref), [`ICA`](@ref), [`FactorAnalysis`](@ref), [`PPCA`](@ref)
 """
 KernelPCA
+
 """
+
 $(MMI.doc_header(ICA))
 
 `ICA` (independent component analysis) is a computational technique for separating a
@@ -645,7 +651,7 @@ The fields of `report(mach)` are:
 - `indim`: Dimension (number of columns/components) of the training
    data and new data to be transformed.
 - `outdim`: Dimension of transformed data (number of separated components).
-- `mean`: The mean vector, which has length `indim`.
+- `mean`: The mean of the untransformed training data, of length `in_dim`.
 
 # Examples
 
@@ -667,7 +673,9 @@ See also
 [`PCA`](@ref), [`KernelPCA`](@ref), [`FactorAnalysis`](@ref), [`PPCA`](@ref)
 """
 ICA
+
 """
+
 $(MMI.doc_header(LDA))
 
 `LDA`: Multiclass linear discriminant analysis. The algorithm learns a
@@ -692,7 +700,7 @@ Where
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
   are of scitype `Continuous`; check the scitypes with `schema(X)`
 - `y`: is the target, which can be any `AbstractVector` whose element
-  scitype is `<:OrderedFactor(2)` or `<:Multiclass(2)`; check the scitype
+  scitype is `OrderedFactor` or `Multiclass`; check the scitype
   with `scitype(y)`
 
 Train the machine using `fit!(mach, rows=...)`.
@@ -712,16 +720,17 @@ Train the machine using `fit!(mach, rows=...)`.
     value `regcoef * eigmax(Sw)` where `Sw` is the within-class scatter matrix, is added
     to the diagonal of Sw to improve numerical stability. This can be useful if using
     the standard covariance estimator.
-- `dist::SemiMetric=SqEuclidean`: The distance metric to use when performing classification
-    (to compare the distance between a new point and centroids in the transformed space),
-    an alternative choice can be the `CosineDist`.Defaults to `SqEuclidean`.
+- `dist=Distances.SqEuclidean()`: The distance metric to use when performing
+   classification (to compare the distance between a new point and centroids in
+   the transformed space); must be a subtype of `Distances.SemiMetric` from
+   Distances.jl, e.g., `Distances.CosineDist`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew` having the same scitype as `X` above.
 - `predict(mach, Xnew)`: Return predictions of the target given
   features `Xnew` having the same scitype as `X` above. Predictions
-  are probabilistic.
+  are probabilistic but uncalibrated.
 - `predict_mode(mach, Xnew)`: Return the modes of the probabilistic predictions
    returned above.
 
@@ -730,9 +739,11 @@ Train the machine using `fit!(mach, rows=...)`.
 
 The fields of `fitted_params(mach)` are:
 
-- `projected_class_means`: The matrix comprised of class-specific means as
-  columns (of size `(d,m)`), where d corresponds to input features and m corresponds to class.
-- `projection_matrix`: The matrix used to project `X` into a lower dimensional space.
+- `projected_class_means`: The matrix comprised of class-specific means as columns,
+   of size `(in_dim, nc)`, where `in_dim` is the number of input features (columns) and
+   `nc` the number of target classes.
+- `projection_matrix`: The learned projection matrix, of size `(in_dim, out_dim)`, where
+ `in_dim` and `out_dim` are the input and output dimensions respectively.
 
 # Report
 
@@ -741,12 +752,13 @@ The fields of `report(mach)` are:
 - `classes`: The classes seen during model fitting.
 - `out_dim`: The dimensions the model is projected to.
 - `class_means`: The matrix comprised of class-specific means as
-  columns (of size `(d,m)`), where d corresponds to input features and m corresponds to class.
-- `mean`: The mean vector.
+  columns (see above).
+- `mean`: The mean of the untransformed training data, of length `in_dim`.
 - `class_weights`: The weights of each class.
 - `Sb`: The between class scatter matrix.
 - `Sw`: The within class scatter matrix.
-- `nc`: The number of classes.
+- `nc`: The number of classes directly observed in the training data (which can be
+   less than the total number of classes in the class pool)
 
 # Examples
 
@@ -761,26 +773,24 @@ model = LDA()
 mach = machine(model, X, y) |> fit!
 
 Xproj = transform(mach, X)
-y_hat = predict(mach, x)
-labels = predict_mode(mach, x)
+y_hat = predict(mach, X)
+labels = predict_mode(mach, X)
 ```
 
 See also
 [`BayesianLDA`](@ref), [`SubspaceLDA`](@ref), [`BayesianSubspaceLDA`](@ref)
 """
 LDA
+
 """
+
 $(MMI.doc_header(BayesianLDA))
 
-`BayesianLDA`: Bayesian Multiclass linear discriminant analysis. The algorithm
-learns a projection matrix `P` that projects a feature matrix `Xtrain` onto a lower
-dimensional space of dimension `out_dim` such that the trace of the transformed
-between-class scatter matrix(`Pᵀ*Sb*P`) is maximized relative to the trace of the
-transformed within-class scatter matrix (`Pᵀ*Sw*P`). The projection matrix is scaled
-such that `Pᵀ*Sw*P = n` or `Pᵀ*Σw*P=I` (Where `n` is the number of training samples
-and `Σw` is the within-class covariance matrix).
+`BayesianLDA`: Bayesian Multiclass linear discriminant analysis. The algorithm learns a
+projection matrix as described in [`LDA`](@ref)
 Predicted class posterior probability distibution are derived by applying Bayes rule
-with a multivariate Gaussian class-conditional distribution.
+with a multivariate Gaussian class-conditional distribution. A prior class distribution
+can be specified from by the user or inferred from training data class frequency.
 
 See also the [package documentation](
 https://multivariatestatsjl.readthedocs.io/en/latest/lda.html).
@@ -799,7 +809,7 @@ Where
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
   are of scitype `Continuous`; check the scitypes with `schema(X)`
 - `y`: is the target, which can be any `AbstractVector` whose element
-  scitype is `<:OrderedFactor(2)` or `<:Multiclass(2)`; check the scitype
+  scitype is `OrderedFactor` or `Multiclass`; check the scitype
   with `scitype(y)`
 
 Train the machine using `fit!(mach, rows=...)`.
@@ -827,10 +837,10 @@ value `regcoef * eigmax(Sw)` where `Sw` is the within-class covariance estimator
 
 # Operations
 
-- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew` having the same scitype as `X` above.
 - `predict(mach, Xnew)`: Return predictions of the target given
   features `Xnew` having the same scitype as `X` above. Predictions
-  are probabilistic.
+  are probabilistic but uncalibrated.
 - `predict_mode(mach, Xnew)`: Return the modes of the probabilistic predictions
    returned above.
 
@@ -839,10 +849,13 @@ value `regcoef * eigmax(Sw)` where `Sw` is the within-class covariance estimator
 
 The fields of `fitted_params(mach)` are:
 
-- `projected_class_means`: The matrix comprised of class-specific means as
-  columns (of size `(d,m)`), where d corresponds to input features and m corresponds to class.
-- `projection_matrix`: The matrix used to project `X` into a lower dimensional space.
-- `priors`: The estimated class priors.
+- `projected_class_means`: The matrix comprised of class-specific means as columns,
+   of size `(in_dim, nc)`, where `in_dim` is the number of input features (columns) and
+   `nc` the number of target classes.
+- `projection_matrix`: The learned projection matrix, of size `(in_dim, out_dim)`, where
+ `in_dim` and `out_dim` are the input and output dimensions respectively.
+- `priors`: The class priors for classification. As inferred from training target `y`,
+   if not user-specified. A vector with order consistent with `levels(y)`.
 
 # Report
 
@@ -851,12 +864,13 @@ The fields of `report(mach)` are:
 - `classes`: The classes seen during model fitting.
 - `out_dim`: The dimensions the model is projected to.
 - `class_means`: The matrix comprised of class-specific means as
-  columns (of size `(d,m)`), where d corresponds to input features and m corresponds to class.
-- `mean`: The mean vector.
+  columns (see above).
+- `mean`: The mean of the untransformed training data, of length `in_dim`.
 - `class_weights`: The weights of each class.
 - `Sb`: The between class scatter matrix.
 - `Sw`: The within class scatter matrix.
-- `nc`: The number of classes.
+- `nc`: The number of classes directly observed in the training data (which can be
+   less than the total number of classes in the class pool)
 
 # Examples
 
@@ -871,31 +885,32 @@ model = BLDA()
 mach = machine(model, X, y) |> fit!
 
 Xproj = transform(mach, X)
-y_hat = predict(mach, x)
-labels = predict_mode(mach, x)
+y_hat = predict(mach, X)
+labels = predict_mode(mach, X)
 ```
 
 See also
 [`LDA`](@ref), [`SubspaceLDA`](@ref), [`BayesianSubspaceLDA`](@ref)
 """
 BayesianLDA
+
 """
+
 $(MMI.doc_header(SubspaceLDA))
 
-`SubspaceLDA`: Multiclass linear discriminant analysis. Suitable for high
-dimensional data (Avoids computing scatter matrices `Sw` ,`Sb`). The algorithm learns a
-projection matrix `P = W*L` that projects a feature matrix `Xtrain` onto a lower
-dimensional space of dimension `nc - 1` such that the trace of the transformed
-between-class scatter matrix(`Pᵀ*Sb*P`) is maximized relative to the trace of the
-transformed within-class scatter matrix (`Pᵀ*Sw*P`). The projection matrix is scaled
-such that `Pᵀ*Sw*P = mult*I` or `Pᵀ*Σw*P=mult/(n-nc)*I` (where `n` is the number of
-training samples, mult` is  one of `n` or `1` depending on whether `Sb` is normalized,
-`Σw` is the within-class covariance matrix, and `nc` is the number of unique classes
-in `y`) and also obeys `Wᵀ*Sb*p = λ*Wᵀ*Sw*p`, for every column `p` in `P`.
-Predicted class posterior probability for feature matrix `Xtest` are derived by
-applying a softmax transformation to a matrix `Pr`, such that  rowᵢ of `Pr` contains
-computed distances(based on a distance metric) in the transformed space of rowᵢ in
-`Xtest` to the centroid of each class.
+`SubspaceLDA`: Multiclass subspace linear discriminant analysis (LDA) is a variation on
+ordinary LDA suitable for high dimensional data, as it avoids storing scatter
+matrices. For details, refer the
+[MultivariateStats.jl documentation](https://juliastats.org/MultivariateStats.jl/stable/).
+In addition to dimension reduction, probabilistic classification is provided.
+In the case of classification, the class probability for a new observation
+reflects the proximity of that observation to training observations
+associated with that class, and how far away the observation is from those
+associated with other classes. Specifically, the distances, in the transformed
+(projected) space, of a new observation, from the centroid of each target class,
+is computed; the resulting vector of distances (times minus one) is passed to a
+softmax function to obtain a class probability prediction. Here "distance"
+is computed using a user-specified distance function.
 
 # Training data
 
@@ -908,7 +923,7 @@ Where
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
   are of scitype `Continuous`; check the scitypes with `schema(X)`
 - `y`: is the target, which can be any `AbstractVector` whose element
-  scitype is `<:OrderedFactor(2)` or `<:Multiclass(2)`; check the scitype
+  scitype is `OrderedFactor` or `Multiclass`; check the scitype
   with `scitype(y)`
 
 Train the machine using `fit!(mach, rows=...)`.
@@ -919,17 +934,18 @@ Train the machine using `fit!(mach, rows=...)`.
    observations in each class, one of `true` or `false`.
 - `out_dim`: The dimension of the transformed space to be used by `predict` and
    `transform` methods, automatically set if 0 is given (default).
-- `dist=SqEuclidean`: The distance metric to use when performing classification
-   (to compare the distance between a new point and centroids in the transformed space),
-   an alternative choice can be the `CosineDist`.
+- `dist=Distances.SqEuclidean()`: The distance metric to use when performing
+   classification (to compare the distance between a new point and centroids in
+   the transformed space); must be a subtype of `Distances.SemiMetric` from
+   Distances.jl, e.g., `Distances.CosineDist`.
 
 
 # Operations
 
-- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew` having the same scitype as `X` above.
 - `predict(mach, Xnew)`: Return predictions of the target given
   features `Xnew` having the same scitype as `X` above. Predictions
-  are probabilistic.
+  are probabilistic but uncalibrated.
 - `predict_mode(mach, Xnew)`: Return the modes of the probabilistic predictions
    returned above.
 
@@ -938,7 +954,6 @@ Train the machine using `fit!(mach, rows=...)`.
 
 The fields of `fitted_params(mach)` are:
 
-BUG: RENAME, Make note on top of PR for inconsistency
 - `class_means`: The matrix comprised of class-specific means as
   columns (of size `(d,m)`), where d corresponds to input features and m corresponds to class.
 - `projection_matrix`: The matrix used to project `X` into a lower dimensional space.
@@ -950,21 +965,22 @@ The fields of `report(mach)` are:
 - `explained_variance_ratio`: The ratio of explained variance to total variance. Each dimension corresponds to an eigenvalue.
 - `classes`: The classes seen during model fitting.
 - `class_means`: The matrix comprised of class-specific means as
-  columns (of size `(d,m)`), where d corresponds to input features and m corresponds to class.
-- `mean`: The mean vector.
+  columns (see above).
+- `mean`: The mean of the untransformed training data, of length `in_dim`.
 - `class_weights`: The weights of each class.
-- `nc`: The number of classes.
+- `nc`: The number of classes directly observed in the training data (which can be
+   less than the total number of classes in the class pool)
 
 # Examples
 
 ```
 using MLJ
 
-sLDA = @load SubspaceLDA pkg=MultivariateStats
+SLDA = @load SubspaceLDA pkg=MultivariateStats
 
 X, y = @load_iris
 
-model = sLDA()
+model = SLDA()
 mach = machine(model, X, y) |> fit!
 
 Xproj = transform(mach, X)
@@ -976,22 +992,16 @@ See also
 [`LDA`](@ref), [`BayesianLDA`](@ref), [`BayesianSubspaceLDA`](@ref)
 """
 SubspaceLDA
+
 """
+
 $(MMI.doc_header(BayesianSubspaceLDA))
 
 
-`SubspaceLDA`: Bayesian Multiclass linear discriminant analysis. Suitable for high dimensional data
-(Avoids computing scatter matrices `Sw` ,`Sb`). The algorithm learns a projection
-matrix `P = W*L` (`Sw`), that projects a feature matrix `Xtrain` onto a lower
-dimensional space of dimension `nc-1` such that the trace of the transformed
-between-class scatter matrix(`Pᵀ*Sb*P`) is maximized relative to the trace of the
-transformed within-class scatter matrix (`Pᵀ*Sw*P`). The projection matrix is scaled
-such that `Pᵀ*Sw*P = mult*I` or `Pᵀ*Σw*P=mult/(n-nc)*I` (where `n` is the number of
-training samples, `mult` is  one of `n` or `1` depending on whether `Sb` is normalized,
-`Σw` is the within-class covariance matrix, and `nc` is the number of unique classes in
-`y`) and also obeys `Wᵀ*Sb*p = λ*Wᵀ*Sw*p`, for every column `p` in `P`.
-Posterior class probability distibution are derived by applying Bayes rule with a
-multivariate Gaussian class-conditional distribution
+`BayesianSubspaceLDA`: Bayesian Multiclass Subspace linear discriminant analysis. The algorithm learns a
+projection matrix as described in [`SubspaceLDA`](@ref). Posterior class probability
+distribution is derived as in [`BayesianLDA`](@ref).
+
 
 # Training data
 
@@ -1004,7 +1014,7 @@ Where
 - `X`: is any table of input features (eg, a `DataFrame`) whose columns
   are of scitype `Continuous`; check the scitypes with `schema(X)`
 - `y`: is the target, which can be any `AbstractVector` whose element
-  scitype is `<:OrderedFactor(2)` or `<:Multiclass(2)`; check the scitype
+  scitype is `OrderedFactor` or `Multiclass`; check the scitype
   with `scitype(y)`
 
 Train the machine using `fit!(mach, rows=...)`.
@@ -1024,10 +1034,10 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew` having the same scitype as `X` above.
 - `predict(mach, Xnew)`: Return predictions of the target given
   features `Xnew` having the same scitype as `X` above. Predictions
-  are probabilistic.
+  are probabilistic but uncalibrated.
 - `predict_mode(mach, Xnew)`: Return the modes of the probabilistic predictions
    returned above.
 
@@ -1036,10 +1046,13 @@ Train the machine using `fit!(mach, rows=...)`.
 
 The fields of `fitted_params(mach)` are:
 
-- `projected_class_means`: The matrix comprised of class-specific means as
-  columns (of size `(d,m)`), where d corresponds to input features and m corresponds to class.
-- `projection_matrix`: The matrix used to project `X` into a lower dimensional space.
-- `priors`: The estimated class priors.
+- `projected_class_means`: The matrix comprised of class-specific means as columns,
+   of size `(in_dim, nc)`, where `in_dim` is the number of input features (columns) and
+   `nc` the number of target classes.
+- `projection_matrix`: The learned projection matrix, of size `(in_dim, out_dim)`, where
+ `in_dim` and `out_dim` are the input and output dimensions respectively.
+- `priors`: The class priors for classification. As inferred from training target `y`,
+   if not user-specified. A vector with order consistent with `levels(y)`.
 
 # Report
 
@@ -1048,21 +1061,22 @@ The fields of `report(mach)` are:
 - `explained_variance_ratio`: The ratio of explained variance to total variance. Each dimension corresponds to an eigenvalue.
 - `classes`: The classes seen during model fitting.
 - `class_means`: The matrix comprised of class-specific means as
-  columns (of size `(d,m)`), where d corresponds to input features and m corresponds to class.
-- `mean`: The mean vector.
+  columns (see above).
+- `mean`: The mean of the untransformed training data, of length `in_dim`.
 - `class_weights`: The weights of each class.
-- `nc`: The number of classes.
+- `nc`: The number of classes directly observed in the training data (which can be
+   less than the total number of classes in the class pool)
 
 # Examples
 
 ```
 using MLJ
 
-bsLDA = @load BayesianSubspaceLDA pkg=MultivariateStats
+BSLDA = @load BayesianSubspaceLDA pkg=MultivariateStats
 
 X, y = @load_iris
 
-model = bsLDA()
+model = BSLDA()
 mach = machine(model, X, y) |> fit!
 
 Xproj = transform(mach, X)
@@ -1074,7 +1088,9 @@ See also
 [`LDA`](@ref), [`BayesianLDA`](@ref), [`SubspaceLDA`](@ref)
 """
 BayesianSubspaceLDA
+
 """
+
 $(MMI.doc_header(FactorAnalysis))
 
 `FactorAnalysis`(FA) is a linear-Gaussian latent variable model that is
@@ -1110,13 +1126,15 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
 The fields of `fitted_params(mach)` are:
 
-- `projection`: Returns the projection matrix (of size `(d, m)`).
+
+- `projection`: Returns the projection matrix, which has size `(indim, outdim)`), where
+   `indim` and `outdim` are the number of features of the input and ouput respectively.
   Each column of the projection matrix corresponds to a factor.
 
 # Report
@@ -1127,7 +1145,7 @@ The fields of `report(mach)` are:
 - `outdim`: `min(n, indim, maxoutdim)`, where `n` is the number of observations.
 - `variance`: The variance of the factors.
 - `covariance_matrix`: The estimated covariance matrix.
-- `mean`: The mean vector.
+- `mean`: The mean of the untransformed training data, of length `in_dim`.
 - `loadings`: The factor loadings.
 
 # Examples
@@ -1149,7 +1167,9 @@ See also
 [`KernelPCA`](@ref), [`ICA`](@ref), [`PPCA`](@ref), [`PCA`](@ref)
 """
 FactorAnalysis
+
 """
+
 $(MMI.doc_header(PPCA))
 
 `PPCA`(Probabilistic principal component analysis) represents a constrained
@@ -1186,13 +1206,14 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return a lower dimentional projection of the input `Xnew` having the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew` having the same scitype as `X` above.
 
 # Fitted parameters
 
 The fields of `fitted_params(mach)` are:
 
-- `projection`: Returns the projection matrix (of size `(d, m)`).
+- `projection`: Returns the projection matrix, which has size `(indim, outdim)`), where
+   `indim` and `outdim` are the number of features of the input and ouput respectively.
   Each column of the projection matrix corresponds to a principal component.
 
 # Report
