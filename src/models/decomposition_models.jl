@@ -155,7 +155,7 @@ $ICA_DESCR
     `Matrix{<:Real}` is used.
 """
 @mlj_model mutable struct ICA <: MMI.Unsupervised
-    k::Int = 0::(_ ≥ 0)
+    outdim::Int = 0::(_ ≥ 0)
     alg::Symbol = :fastica::(_ in (:fastica,))
     fun::Symbol = :tanh::(_ in (:tanh, :gaus))
     do_whiten::Bool = true
@@ -174,7 +174,7 @@ function MMI.fit(model::ICA, verbosity::Int, X)
     Xarray = MMI.matrix(X)
     n, p = size(Xarray)
     m = min(n, p)
-    k = ifelse(model.k ≤ m, model.k, m)
+    k = ifelse(model.outdim ≤ m, model.outdim, m)
     fitresult = MS.fit(
         MS.ICA, Xarray', k;
         alg=model.alg,
