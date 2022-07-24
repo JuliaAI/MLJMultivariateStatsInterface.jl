@@ -56,7 +56,7 @@ function MMI.fit(model::LDA, ::Int, X, y)
     report = (
         classes=classes_seen,
         out_dim=MS.size(core_res)[2],
-        class_means=MS.classmeans(core_res),
+        projected_class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
         Sw=MS.withclass_scatter(core_res),
@@ -221,7 +221,7 @@ function MMI.fit(model::BayesianLDA, ::Int, X, y)
     report    = (
         classes=classes_seen,
         out_dim=MS.size(core_res)[2],
-        class_means=MS.classmeans(core_res),
+        projected_class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
         Sw=MS.withclass_scatter(core_res),
@@ -356,7 +356,7 @@ function MMI.fit(model::SubspaceLDA, ::Int, X, y)
     report = (
         explained_variance_ratio=explained_variance_ratio,
         classes=classes_seen,
-        class_means=MS.classmeans(core_res),
+        projected_class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
         nc=nc
@@ -366,7 +366,7 @@ function MMI.fit(model::SubspaceLDA, ::Int, X, y)
 end
 
 function MMI.fitted_params(::SubspaceLDA, (core_res, _))
-    return (class_means=MS.classmeans(core_res), projection_matrix=MS.projection(core_res))
+    return (projected_class_means=MS.classmeans(core_res), projection_matrix=MS.projection(core_res))
 end
 
 function MMI.predict(m::SubspaceLDA, (core_res, out_dim, classes_seen), Xnew)
@@ -456,7 +456,7 @@ function MMI.fit(model::BayesianSubspaceLDA, ::Int, X, y)
     report = (
         explained_variance_ratio=explained_variance_ratio,
         classes=classes_seen,
-        class_means=MS.classmeans(core_res),
+        projected_class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
         nc=nc
