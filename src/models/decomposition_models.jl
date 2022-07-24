@@ -22,7 +22,7 @@ $PCA_DESCR
 @mlj_model mutable struct PCA <: MMI.Unsupervised
     maxoutdim::Int = 0::(_ ≥ 0)
     method::Symbol = :auto::(_ in (:auto, :cov, :svd))
-    pratio::Float64 = 0.99::(0.0 < _ ≤ 1.0)
+    variance_ratio::Float64 = 0.99::(0.0 < _ ≤ 1.0)
     mean::Union{Nothing, Real, Vector{Float64}} = nothing::(_check_typeof_mean(_))
 end
 
@@ -37,7 +37,7 @@ function MMI.fit(model::PCA, verbosity::Int, X)
     fitresult = MS.fit(
         MS.PCA, Xarray';
         method=model.method,
-        pratio=model.pratio,
+        pratio=model.variance_ratio,
         maxoutdim=maxoutdim,
         mean=model.mean
     )
