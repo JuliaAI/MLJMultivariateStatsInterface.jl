@@ -43,8 +43,8 @@ function MMI.fit(model::PCA, verbosity::Int, X)
     )
     cache = nothing
     report = (
-        indim=MS.size(fitresult,1),
-        outdim=MS.size(fitresult,2),
+        indim=size(fitresult)[1],
+        outdim=size(fitresult)[2],
         tprincipalvar=MS.tprincipalvar(fitresult),
         tresidualvar=MS.tresidualvar(fitresult),
         tvar=MS.var(fitresult),
@@ -112,8 +112,8 @@ function MMI.fit(model::KernelPCA, verbosity::Int, X)
     )
     cache  = nothing
     report = (
-        indim=MS.size(fitresult,1),
-        outdim=MS.size(fitresult,2),
+        indim=size(fitresult)[1],
+        outdim=size(fitresult)[2],
         principalvars=copy(MS.eigvals(fitresult))
     )
     return fitresult, cache, report
@@ -187,8 +187,8 @@ function MMI.fit(model::ICA, verbosity::Int, X)
     )
     cache = nothing
     report = (
-        indim=MS.size(fitresult,1),
-        outdim=MS.size(fitresult,2),
+        indim=size(fitresult)[1],
+        outdim=size(fitresult)[2],
         mean=copy(MS.mean(fitresult))
     )
     return fitresult, cache, report
@@ -246,8 +246,8 @@ function MMI.fit(model::PPCA, verbosity::Int, X)
     )
     cache = nothing
     report = (
-        indim=MS.size(fitresult,1),
-        outdim=MS.size(fitresult,2),
+        indim=size(fitresult)[1],
+        outdim=size(fitresult)[2],
         tvar=MS.var(fitresult),
         mean=copy(MS.mean(fitresult)),
         loadings=MS.loadings(fitresult)
@@ -309,8 +309,8 @@ function MMI.fit(model::FactorAnalysis, verbosity::Int, X)
     )
     cache = nothing
     report = (
-        indim=MS.size(fitresult,1),
-        outdim=MS.size(fitresult,2),
+        indim=size(fitresult)[1],
+        outdim=size(fitresult)[2],
         variance=MS.var(fitresult),
         covariance_matrix=MS.cov(fitresult),
         mean=MS.mean(fitresult),
