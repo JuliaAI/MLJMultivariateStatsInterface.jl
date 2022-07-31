@@ -183,9 +183,9 @@ y1 = y[[1,1,1,1]]
 ## than unique classes during training.
 @test_throws ArgumentError fit(model, 1, X, y)
 
-## Check to make sure error is thrown if `out_dim` exceeds the number of features in
+## Check to make sure error is thrown if `outdim` exceeds the number of features in
 ## sample matrix used in training.
-model = LDA(out_dim=3)
+model = LDA(outdim=3)
 # categorical array with same pool as y but only containing "apples" & "oranges"
 y2 = y[[1,2,1,2]]
 @test_throws ArgumentError fit(model, 1, X, y2)
