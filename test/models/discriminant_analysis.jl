@@ -165,43 +165,63 @@ end
 end
 
 @testset "discriminant models checks" begin
-## Data to be used for tests
-y = categorical(["apples", "oranges", "carrots", "mango"])
-X = (x1 =rand(4), x2 = collect(1:4))
+    ## Data to be used for tests
+    y = categorical(["apples", "oranges", "carrots", "mango"])
+    X = (x1 =rand(4), x2 = collect(1:4))
 
-## Note: The following test depend on the order in which they are written.
-## Hence do not change the ordering of the tests.
+    model = LDA()
 
-## Check to make sure error is thrown if we only have a single
-## unique class during training.
-model = LDA()
-# categorical array with same pool as y but only containing "apples"
-y1 = y[[1,1,1,1]]
-@test_throws ArgumentError fit(model, 1, X, y1)
+    ## Note: The following tests depend on the order in which they are written.
+    ## Hence do not change the ordering of the tests.
 
-## Check to make sure error is thrown if we don't have more samples
-## than unique classes during training.
-@test_throws ArgumentError fit(model, 1, X, y)
+    ## Check to make sure error is thrown if we don't have more samples
+    ## than unique classes during training.
+    @test_throws ArgumentError fit(model, 1, X, y)
 
-## Check to make sure error is thrown if `outdim` exceeds the number of features in
-## sample matrix used in training.
-model = LDA(outdim=3)
-# categorical array with same pool as y but only containing "apples" & "oranges"
-y2 = y[[1,2,1,2]]
-@test_throws ArgumentError fit(model, 1, X, y2)
+    ## Check to make sure error is thrown if `outdim` exceeds the number of features in
+    ## sample matrix used in training.
+    model = LDA(outdim=3)
+    # categorical array with same pool as y but only containing "apples" & "oranges"
+    y2 = y[[1,2,1,2]]
+    @test_throws ArgumentError fit(model, 1, X, y2)
 
-## Check to make sure error is thrown if length(`priors`) !=  number of classes
-## in common pool of target vector used in training.
-model = BayesianLDA(priors=[0.1, 0.5, 0.4])
-@test_throws ArgumentError fit(model, 1, X, y)
+    ## Check to make sure error is thrown if length(`priors`) !=  number of classes
+    ## in common pool of target vector used in training.
+    model = BayesianLDA(priors=[0.1, 0.5, 0.4])
+    @test_throws ArgumentError fit(model, 1, X, y)
 
-## Check to make sure error is thrown if sum(`priors`) isn't approximately equal to 1.
-model = BayesianLDA(priors=[0.1, 0.5, 0.4, 0.2])
-@test_throws ArgumentError fit(model, 1, X, y)
+    ## Check to make sure error is thrown if sum(`priors`) isn't approximately equal to 1.
+    model = BayesianLDA(priors=[0.1, 0.5, 0.4, 0.2])
+    @test_throws ArgumentError fit(model, 1, X, y)
 
-## Check to make sure error is thrown if `priors .< 0` or `priors .> 1`.
-model = BayesianLDA(priors=[-0.1, 0.0, 1.0, 0.1])
-@test_throws ArgumentError fit(model, 1, X, y)
-model = BayesianLDA(priors=[1.1, 0.0, 0.0, -0.1])
-@test_throws ArgumentError fit(model, 1, X, y)
+    ## Check to make sure error is thrown if `priors .< 0` or `priors .> 1`.
+    model = BayesianLDA(priors=[-0.1, 0.0, 1.0, 0.1])
+    @test_throws ArgumentError fit(model, 1, X, y)
+    model = BayesianLDA(priors=[1.1, 0.0, 0.0, -0.1])
+    @test_throws ArgumentError fit(model, 1, X, y)
+
+    ## Check that a lone target class in training is okay, when using default
+    ## hyperparameter values (issue #41):
+    X2 = (x=rand(5),)
+    y2 = coerce(collect("aaaaab"), Multiclass)[1:end - 1]
+    all([LDA, SubspaceLDA, BayesianLDA, BayesianSubspaceLDA]) do M
+        model = M()
+        Θ, _ = MLJBase.fit(model, 0, X2, y2)
+        Set(levels(predict_mode(model, Θ, X2))) == Set(levels(y2))
+    end
+
+    ## Check that an error is thrown in lone class case if `cov_w` or `cov_b` are not
+    ## `SimpleCovariance()` instances (see issue #41):
+    c = MultivariateStats.SimpleCovariance(; corrected=true)
+    for model in [
+        LDA(cov_w=c),
+        LDA(cov_b=c),
+        LDA(cov_w=c, cov_b=c),
+        BayesianLDA(cov_w=c),
+    ]
+        @test_throws(
+            MLJMultivariateStatsInterface.ERR_LONE_TARGET_CLASS,
+            MLJBase.fit(model, 0, X2, y2)
+        )
+    end
 end

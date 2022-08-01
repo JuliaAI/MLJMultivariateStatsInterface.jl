@@ -67,6 +67,14 @@ function MMI.fit(model::LDA, ::Int, X, y)
     return fitresult, cache, report
 end
 
+const ERR_LONE_TARGET_CLASS = ArgumentError(
+    "The number of unique classes in "*
+    "the training target has to be greater than one. It does not "*
+    "suffice to have more than one class in the pool. This is not "*
+    "an issue if `cov_w` and `cov_b` are set to "*
+    "`CovarianceEstimation.SimpleCovariance()`, the default for both. "
+)
+
 function _check_lda_data(model, X, y)
     class_list = MMI.classes(y[1]) # Class list containing entries in pool of y.
     nclasses = length(class_list)
@@ -79,15 +87,13 @@ function _check_lda_data(model, X, y)
     p, n = size(Xm_t)
     # Recode yplain to be in {1,..., nc}
     nc == nclasses || _replace!(yplain, integers_seen, 1:nc)
-    # Check to make sure we have more than one class in training sample.
-    # This is to prevent Sb from being a zero matrix.
-    if nc <= 1
-        throw(
-            ArgumentError(
-                "The number of unique classes in "*
-                "traning sample has to be greater than one"
-            )
-        )
+
+    # issue #41
+    lone_class_unsupported = model isa Union{LDA, BayesianLDA} &&
+        !(model.cov_w == MS.SimpleCovariance() &&
+          model.cov_b == MS.SimpleCovariance())
+    if nc <= 1 && lone_class_unsupported
+        throw(ERR_LONE_TARGET_CLASS)
     end
     # Check to make sure we have more samples than classes.
     # This is to prevent Sw from being the zero matrix.
