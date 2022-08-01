@@ -22,7 +22,7 @@ $PCA_DESCR
 @mlj_model mutable struct PCA <: MMI.Unsupervised
     maxoutdim::Int = 0::(_ ≥ 0)
     method::Symbol = :auto::(_ in (:auto, :cov, :svd))
-    pratio::Float64 = 0.99::(0.0 < _ ≤ 1.0)
+    variance_ratio::Float64 = 0.99::(0.0 < _ ≤ 1.0)
     mean::Union{Nothing, Real, Vector{Float64}} = nothing::(_check_typeof_mean(_))
 end
 
@@ -37,14 +37,14 @@ function MMI.fit(model::PCA, verbosity::Int, X)
     fitresult = MS.fit(
         MS.PCA, Xarray';
         method=model.method,
-        pratio=model.pratio,
+        pratio=model.variance_ratio,
         maxoutdim=maxoutdim,
         mean=model.mean
     )
     cache = nothing
     report = (
-        indim=MS.size(fitresult,1),
-        outdim=MS.size(fitresult,2),
+        indim=size(fitresult)[1],
+        outdim=size(fitresult)[2],
         tprincipalvar=MS.tprincipalvar(fitresult),
         tresidualvar=MS.tresidualvar(fitresult),
         tvar=MS.var(fitresult),
@@ -112,8 +112,8 @@ function MMI.fit(model::KernelPCA, verbosity::Int, X)
     )
     cache  = nothing
     report = (
-        indim=MS.size(fitresult,1),
-        outdim=MS.size(fitresult,2),
+        indim=size(fitresult)[1],
+        outdim=size(fitresult)[2],
         principalvars=copy(MS.eigvals(fitresult))
     )
     return fitresult, cache, report
@@ -155,7 +155,7 @@ $ICA_DESCR
     `Matrix{<:Real}` is used.
 """
 @mlj_model mutable struct ICA <: MMI.Unsupervised
-    k::Int = 0::(_ ≥ 0)
+    outdim::Int = 0::(_ ≥ 0)
     alg::Symbol = :fastica::(_ in (:fastica,))
     fun::Symbol = :tanh::(_ in (:tanh, :gaus))
     do_whiten::Bool = true
@@ -174,7 +174,7 @@ function MMI.fit(model::ICA, verbosity::Int, X)
     Xarray = MMI.matrix(X)
     n, p = size(Xarray)
     m = min(n, p)
-    k = ifelse(model.k ≤ m, model.k, m)
+    k = ifelse(model.outdim ≤ m, model.outdim, m)
     fitresult = MS.fit(
         MS.ICA, Xarray', k;
         alg=model.alg,
@@ -187,8 +187,8 @@ function MMI.fit(model::ICA, verbosity::Int, X)
     )
     cache = nothing
     report = (
-        indim=MS.size(fitresult,1),
-        outdim=MS.size(fitresult,2),
+        indim=size(fitresult)[1],
+        outdim=size(fitresult)[2],
         mean=copy(MS.mean(fitresult))
     )
     return fitresult, cache, report
@@ -246,8 +246,8 @@ function MMI.fit(model::PPCA, verbosity::Int, X)
     )
     cache = nothing
     report = (
-        indim=MS.size(fitresult,1),
-        outdim=MS.size(fitresult,2),
+        indim=size(fitresult)[1],
+        outdim=size(fitresult)[2],
         tvar=MS.var(fitresult),
         mean=copy(MS.mean(fitresult)),
         loadings=MS.loadings(fitresult)
@@ -309,8 +309,8 @@ function MMI.fit(model::FactorAnalysis, verbosity::Int, X)
     )
     cache = nothing
     report = (
-        indim=MS.size(fitresult,1),
-        outdim=MS.size(fitresult,2),
+        indim=size(fitresult)[1],
+        outdim=size(fitresult)[2],
         variance=MS.var(fitresult),
         covariance_matrix=MS.cov(fitresult),
         mean=MS.mean(fitresult),
