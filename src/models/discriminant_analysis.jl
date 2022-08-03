@@ -69,10 +69,10 @@ end
 
 const ERR_LONE_TARGET_CLASS = ArgumentError(
     "The number of unique classes in "*
-    "the training target has to be greater than one. It does not "*
-    "suffice to have more than one class in the pool. This is not "*
-    "an issue if `cov_w` and `cov_b` are set to "*
-    "`CovarianceEstimation.SimpleCovariance()`, the default for both. "
+    "the training target has to be greater than one, even if "*
+    "the complete pool contains more than one class. If "*
+    "`cov_b=CovarianceEstimation.SimpleCovariance()` this "*
+    "restriction on classes does not apply. "
 )
 
 function _check_lda_data(model, X, y)
@@ -90,8 +90,7 @@ function _check_lda_data(model, X, y)
 
     # issue #41
     lone_class_unsupported = model isa Union{LDA, BayesianLDA} &&
-        !(model.cov_w == MS.SimpleCovariance() &&
-          model.cov_b == MS.SimpleCovariance())
+          model.cov_b != MS.SimpleCovariance()
     if nc <= 1 && lone_class_unsupported
         throw(ERR_LONE_TARGET_CLASS)
     end

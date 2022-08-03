@@ -200,24 +200,32 @@ end
     model = BayesianLDA(priors=[1.1, 0.0, 0.0, -0.1])
     @test_throws ArgumentError fit(model, 1, X, y)
 
-    ## Check that a lone target class in training is okay, when using default
-    ## hyperparameter values (issue #41):
+
     X2 = (x=rand(5),)
     y2 = coerce(collect("aaaaab"), Multiclass)[1:end - 1]
-    all([LDA, SubspaceLDA, BayesianLDA, BayesianSubspaceLDA]) do M
+    corrected = MultivariateStats.SimpleCovariance(; corrected=true)
+
+    ## Check that a lone target class in training is okay when using
+    ## default hyperparameter values (issue #41):
+    @test all([LDA, SubspaceLDA, BayesianLDA, BayesianSubspaceLDA]) do M
         model = M()
         Θ, _ = MLJBase.fit(model, 0, X2, y2)
         Set(levels(predict_mode(model, Θ, X2))) == Set(levels(y2))
     end
 
-    ## Check that an error is thrown in lone class case if `cov_w` or `cov_b` are not
-    ## `SimpleCovariance()` instances (see issue #41):
-    c = MultivariateStats.SimpleCovariance(; corrected=true)
+    ## Check that a lone target class in training is okay if `cov_w = SimpleCovariance(;
+    ## corrected=true)` (issue #41):
+    @test all([LDA, BayesianLDA]) do M
+        model = M(cov_w=corrected)
+        Θ, _ = MLJBase.fit(model, 0, X2, y2)
+        Set(levels(predict_mode(model, Θ, X2))) == Set(levels(y2))
+    end
+
+    ## Check that an error is thrown in lone class case if `cov_b` is not
+    ## `SimpleCovariance()` (see issue #41):
     for model in [
-        LDA(cov_w=c),
-        LDA(cov_b=c),
-        LDA(cov_w=c, cov_b=c),
-        BayesianLDA(cov_w=c),
+        LDA(cov_b=corrected),
+        BayesianLDA(cov_b=corrected),
     ]
         @test_throws(
             MLJMultivariateStatsInterface.ERR_LONE_TARGET_CLASS,
