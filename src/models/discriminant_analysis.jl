@@ -47,7 +47,7 @@ function MMI.fit(model::LDA, ::Int, X, y)
     core_res = MS.fit(
         MS.MulticlassLDA, nc, Xm_t, Int.(yplain);
         method=model.method,
-        outdim=outdim,
+        outdim,
         regcoef=model.regcoef,
         covestimator_within=model.cov_w,
         covestimator_between=model.cov_b
@@ -215,7 +215,7 @@ function MMI.fit(model::BayesianLDA, ::Int, X, y)
     core_res = MS.fit(
         MS.MulticlassLDA, nc, Xm_t, Int.(yplain);
         method=model.method,
-        outdim=outdim,
+        outdim,
         regcoef=model.regcoef,
         covestimator_within=model.cov_w,
         covestimator_between=model.cov_b
