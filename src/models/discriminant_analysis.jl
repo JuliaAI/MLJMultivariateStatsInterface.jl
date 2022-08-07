@@ -61,7 +61,7 @@ function MMI.fit(model::LDA, ::Int, X, y)
         class_weights=MS.classweights(core_res),
         Sw=MS.withclass_scatter(core_res),
         Sb=MS.betweenclass_scatter(core_res),
-        nc=nc
+        nclasses=nc
     )
     fitresult = (core_res, classes_seen)
     return fitresult, cache, report
@@ -237,7 +237,7 @@ function MMI.fit(model::BayesianLDA, ::Int, X, y)
         class_weights=MS.classweights(core_res),
         Sw=MS.withclass_scatter(core_res),
         Sb=MS.betweenclass_scatter(core_res),
-        nc=nc
+        nclasses=nc
     )
 
     fitresult = (core_res, classes_seen, priors, n)
@@ -385,7 +385,7 @@ function MMI.fit(model::SubspaceLDA, ::Int, X, y)
         projected_class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
-        nc=nc
+        nclasses=nc
     )
     outdim = subspace_outdim(core_res, outdim)
     fitresult = (core_res, outdim, classes_seen)
@@ -489,7 +489,7 @@ function MMI.fit(model::BayesianSubspaceLDA, ::Int, X, y)
         projected_class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
-        nc=nc
+        nclasses=nc
     )
     outdim = subspace_outdim(core_res, outdim)
     fitresult = (core_res, outdim, classes_seen, priors, n, mult)
