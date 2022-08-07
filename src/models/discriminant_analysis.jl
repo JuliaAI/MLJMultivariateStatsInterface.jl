@@ -15,7 +15,7 @@ $LDA_DESCR
     could be set to any robust estimator from `CovarianceEstimation.jl`.
 - `cov_b::CovarianceEstimator`=SimpleCovariance: same as `cov_w` but for the between-class
     covariance (used in computing between-class scatter matrix, Sb)
-- `out_dim::Int=0`: the output dimension, i.e dimension of the transformed space,
+- `outdim::Int=0`: the output dimension, i.e dimension of the transformed space,
     automatically set if 0 is given (default).
 - `regcoef::Float64=1e-6`: regularization coefficient (default value 1e-6). A positive
     value `regcoef * eigmax(Sw)` where `Sw` is the within-class scatter matrix, is added
@@ -36,18 +36,18 @@ download?doi=10.1.1.89.7068&rep=rep1&type=pdf).
     method::Symbol = :gevd::(_ in (:gevd, :whiten))
     cov_w::CovarianceEstimator = MS.SimpleCovariance()
     cov_b::CovarianceEstimator = MS.SimpleCovariance()
-    out_dim::Int = 0::(_ ≥ 0)
+    outdim::Int = 0::(_ ≥ 0)
     regcoef::Float64 = 1e-6::(_ ≥ 0)
     dist::SemiMetric = SqEuclidean()
 end
 
 function MMI.fit(model::LDA, ::Int, X, y)
-    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim =
+    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, outdim =
         _check_lda_data(model, X, y)
     core_res = MS.fit(
         MS.MulticlassLDA, nc, Xm_t, Int.(yplain);
         method=model.method,
-        outdim=out_dim,
+        outdim=outdim,
         regcoef=model.regcoef,
         covestimator_within=model.cov_w,
         covestimator_between=model.cov_b
@@ -55,7 +55,7 @@ function MMI.fit(model::LDA, ::Int, X, y)
     cache = nothing
     report = (
         classes=classes_seen,
-        out_dim=MS.size(core_res)[2],
+        outdim=MS.size(core_res)[2],
         class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
@@ -112,18 +112,18 @@ function _check_lda_data(model, X, y)
     # Check output dimension default is min(p, nc-1)
     def_outdim = min(p, nc - 1)
     # If unset (0) use the default; otherwise try to use the provided one
-    out_dim = ifelse(model.out_dim == 0, def_outdim, model.out_dim)
+    outdim = ifelse(model.outdim == 0, def_outdim, model.outdim)
     # Check if the given one is sensible
-    if out_dim > def_outdim
+    if outdim > def_outdim
         throw(
             ArgumentError(
-                "`out_dim` must not be larger than `min(p, nc-1)`"*
+                "`outdim` must not be larger than `min(p, nc-1)`"*
                 "where `p` is the number of features in `X` and"*
                 "`nc` is the number of unique classes in the target vector."
             )
         )
     end
-    return Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim
+    return Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, outdim
 end
 
 function MMI.fitted_params(::LDA, (core_res, classes_seen))
@@ -177,7 +177,7 @@ $BayesianLDA_DESCR
     estimator from `CovarianceEstimation.jl`.
 - `cov_b::CovarianceEstimator=SimpleCovariance()`: same as `cov_w` but for the
     between-class covariance(used in computing between-class scatter matrix, Sb).
-- `out_dim::Int=0`: the output dimension, i.e dimension of the transformed space,
+- `outdim::Int=0`: the output dimension, i.e dimension of the transformed space,
     automatically set if 0 is given (default).
 - `regcoef::Float64=1e-6`: regularization coefficient (default value 1e-6). A positive
 value `regcoef * eigmax(Sw)` where `Sw` is the within-class covariance estimator, is added
@@ -198,13 +198,13 @@ http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.89.7068&rep=rep1&type=p
     method::Symbol = :gevd::(_ in (:gevd, :whiten))
     cov_w::CovarianceEstimator=MS.SimpleCovariance()
     cov_b::CovarianceEstimator=MS.SimpleCovariance()
-    out_dim::Int=0::(_ ≥ 0)
+    outdim::Int=0::(_ ≥ 0)
     regcoef::Float64=1e-6::(_ ≥ 0)
     priors::Union{Nothing, Vector{Float64}}=nothing
 end
 
 function MMI.fit(model::BayesianLDA, ::Int, X, y)
-    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim =
+    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, outdim =
         _check_lda_data(model, X, y)
     ## If piors are specified check if they makes sense.
     ## This was put here to through errors much earlier
@@ -215,7 +215,7 @@ function MMI.fit(model::BayesianLDA, ::Int, X, y)
     core_res = MS.fit(
         MS.MulticlassLDA, nc, Xm_t, Int.(yplain);
         method=model.method,
-        outdim=out_dim,
+        outdim=outdim,
         regcoef=model.regcoef,
         covestimator_within=model.cov_w,
         covestimator_between=model.cov_b
@@ -231,7 +231,7 @@ function MMI.fit(model::BayesianLDA, ::Int, X, y)
     cache = nothing
     report = (
         classes=classes_seen,
-        out_dim=MS.size(core_res)[2],
+        outdim=MS.size(core_res)[2],
         class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
@@ -333,9 +333,9 @@ $SubspaceLDA_DESCR
 
 - `normalize=true`: Option to normalize the between class variance for the number of
     observations in each class, one of `true` or `false`.
-- `out_dim`: the dimension of the transformed space to be used by `predict` and
+- `outdim`: the dimension of the transformed space to be used by `predict` and
     `transform` methods, automatically set if `0` is given (default). If a non-zero 
-    `out_dim` is passed, then the actual output dimension used is `min(rank, out_dim)`
+    `outdim` is passed, then the actual output dimension used is `min(rank, outdim)`
     where `rank` is the rank of the within-class covariance matrix.
 - `dist=SqEuclidean`: the distance metric to use when performing classification
     (to compare the distance between a new point and centroids in the transformed space),
@@ -349,15 +349,15 @@ IEEE Trans. Patt. Anal. & Mach. Int., 26: 995-1006.
 """
 @mlj_model mutable struct SubspaceLDA <: MMI.Probabilistic
     normalize::Bool = true
-    out_dim::Int = 0::(_ ≥ 0)
+    outdim::Int = 0::(_ ≥ 0)
     dist::SemiMetric = SqEuclidean()
 end
 
-function subspace_out_dim(core_res, out_dim)
+function subspace_outdim(core_res, outdim)
     # `projLDA` is a `r x min(r, nc - 1)`  where `r` is the rank of the within-class
     # scatter matrix and `nc` is the number of classes seen in the training sample.
     projLDA = core_res.projLDA
-    return min(size(projLDA, 2), out_dim) # the same as `min(r, out_dims)`
+    return min(size(projLDA, 2), outdim) # the same as `min(r, outdim)`
 end
 
 function explained_variance(core_res)
@@ -368,7 +368,7 @@ function explained_variance(core_res)
 end
 
 function MMI.fit(model::SubspaceLDA, ::Int, X, y)
-    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim =
+    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, outdim =
         _check_lda_data(model, X, y)
 
     core_res = MS.fit(
@@ -387,8 +387,8 @@ function MMI.fit(model::SubspaceLDA, ::Int, X, y)
         class_weights=MS.classweights(core_res),
         nc=nc
     )
-    out_dim = subspace_out_dim(core_res, out_dim)
-    fitresult = (core_res, out_dim, classes_seen)
+    outdim = subspace_outdim(core_res, outdim)
+    fitresult = (core_res, outdim, classes_seen)
     return fitresult, cache, report
 end
 
@@ -396,11 +396,11 @@ function MMI.fitted_params(::SubspaceLDA, (core_res, _))
     return (class_means=MS.classmeans(core_res), projection_matrix=MS.projection(core_res))
 end
 
-function MMI.predict(m::SubspaceLDA, (core_res, out_dim, classes_seen), Xnew)
+function MMI.predict(m::SubspaceLDA, (core_res, outdim, classes_seen), Xnew)
     # projection of `Xnew`, `XWt` is `nt x o` where `o` is the number of out dims
     # and `nt` is the number ot test samples.
     # `proj` is the overall projection_matrix
-    proj = core_res.projw * @view(core_res.projLDA[:, 1:out_dim]) 
+    proj = core_res.projw * @view(core_res.projLDA[:, 1:outdim]) 
     XWt = MMI.matrix(Xnew) * proj
 
     # centroids in the transformed space, nc x o
@@ -438,9 +438,9 @@ $BayesianSubspaceLDA_DESCR
 
 - `normalize::Bool=true`: Option to normalize the between class variance for the number of
     observations in each class, one of `true` or `false`.
-- `out_dim`: the dimension of the transformed space to be used by `predict` and
+- `outdim`: the dimension of the transformed space to be used by `predict` and
     `transform` methods, automatically set if `0` is given (default). If a non-zero 
-    `out_dim` is passed, then the actual output dimension used is `min(rank, out_dim)`
+    `outdim` is passed, then the actual output dimension used is `min(rank, outdim)`
     where `rank` is the rank of the within-class covariance matrix.
 - `priors::Union{Nothing, Vector{Float64}}=nothing`: For use in prediction with Baye's
     rule. If `priors = nothing` then `priors` are estimated from the class proportions
@@ -454,12 +454,12 @@ For more information about the algorithm, see the paper by Howland & Park (2006)
 """
 @mlj_model mutable struct BayesianSubspaceLDA <: MMI.Probabilistic
     normalize::Bool=false
-    out_dim::Int= 0::(_ ≥ 0)
+    outdim::Int= 0::(_ ≥ 0)
     priors::Union{Nothing, Vector{Float64}}=nothing
 end
 
 function MMI.fit(model::BayesianSubspaceLDA, ::Int, X, y)
-    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim =
+    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, outdim =
         _check_lda_data(model, X, y)
     ## If piors are specified check if they makes sense.
     ## This was put here to through errors much earlier
@@ -491,8 +491,8 @@ function MMI.fit(model::BayesianSubspaceLDA, ::Int, X, y)
         class_weights=MS.classweights(core_res),
         nc=nc
     )
-    out_dim = subspace_out_dim(core_res, out_dim)
-    fitresult = (core_res, out_dim, classes_seen, priors, n, mult)
+    outdim = subspace_outdim(core_res, outdim)
+    fitresult = (core_res, outdim, classes_seen, priors, n, mult)
     return fitresult, cache, report
 end
 
@@ -510,13 +510,13 @@ end
 
 function MMI.predict(
     m::BayesianSubspaceLDA,
-    (core_res, out_dim, classes_seen, priors, n, mult),
+    (core_res, outdim, classes_seen, priors, n, mult),
     Xnew
 )
     # projection of `Xnew`, `XWt` is `nt x o` where `o` is the number of out dims
     # and `nt` is the number ot test samples.
     # `proj` is the overall projection_matrix
-    proj = core_res.projw * @view(core_res.projLDA[:, 1:out_dim]) 
+    proj = core_res.projw * @view(core_res.projLDA[:, 1:outdim]) 
     XWt = MMI.matrix(Xnew) * proj
 
     # centroids in the transformed space, `nc x o`
@@ -547,10 +547,10 @@ function MMI.predict(
     return MMI.UnivariateFinite(classes_seen, Pr)
 end
 
-function MMI.transform(m::T, (core_res, out_dim, _), X) where T<:Union{SubspaceLDA, BayesianSubspaceLDA}
+function MMI.transform(m::T, (core_res, outdim, _), X) where T<:Union{SubspaceLDA, BayesianSubspaceLDA}
     # projection of `X`, `XWt` is `nt x o`  where `o` is the out dims and
     # `nt` is the number of test cases
-    proj = core_res.projw * view(core_res.projLDA, :, 1:out_dim)
+    proj = core_res.projw * view(core_res.projLDA, :, 1:outdim)
     # `proj` is overall the projection_matrix
     XWt = MMI.matrix(X) * proj
     return MMI.table(XWt, prototype = X)
