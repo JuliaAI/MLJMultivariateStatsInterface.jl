@@ -710,7 +710,7 @@ Train the machine using `fit!(mach, rows=...)`.
   could be set to any robust estimator from `CovarianceEstimation.jl`.
 - `cov_b::CovarianceEstimator`=SimpleCovariance: The same as `cov_w` but for the between-class
   covariance (used in computing between-class scatter matrix, Sb).
-- `out_dim::Int=0`: The output dimension, i.e dimension of the transformed space,
+- `outdim::Int=0`: The output dimension, i.e dimension of the transformed space,
   automatically set if 0 is given (default).
 - `regcoef::Float64=1e-6`: The regularization coefficient (default value 1e-6). A positive
   value `regcoef * eigmax(Sw)` where `Sw` is the within-class scatter matrix, is added
@@ -819,7 +819,7 @@ Train the machine using `fit!(mach, rows=...)`.
   could be set to any robust estimator from `CovarianceEstimation.jl`.
 - `cov_b::CovarianceEstimator`=SimpleCovariance: The same as `cov_w` but for the between-class
   covariance (used in computing between-class scatter matrix, Sb).
-- `out_dim::Int=0`: The output dimension, i.e dimension of the transformed space,
+- `outdim::Int=0`: The output dimension, i.e dimension of the transformed space,
   automatically set if 0 is given (default).
 - `regcoef::Float64=1e-6`: The regularization coefficient (default value 1e-6). A positive
 value `regcoef * eigmax(Sw)` where `Sw` is the within-class covariance estimator, is added
@@ -928,9 +928,9 @@ Train the machine using `fit!(mach, rows=...)`.
 
 - `normalize=true`: Option to normalize the between class variance for the number of
   observations in each class, one of `true` or `false`.
-- `out_dim`: the dimension of the space to be used by `predict` and
+- `outdim`: the dimension of the space to be used by `predict` and
   `transform` methods, automatically set if `0` is given (default). If a non-zero
-  `out_dim` is passed, then the actual output dimension used is `min(rank, out_dim)`
+  `outdim` is passed, then the actual output dimension used is `min(rank, outdim)`
   where `rank` is the rank of the within-class covariance matrix.
 - `dist=Distances.SqEuclidean()`: The distance metric to use when performing
   classification (to compare the distance between a new point and centroids in
@@ -1021,9 +1021,9 @@ Train the machine using `fit!(mach, rows=...)`.
 
 - `normalize=true`: Option to normalize the between class variance for the number of
   observations in each class, one of `true` or `false`.
-- `out_dim`: the dimension of the space to be used by `predict` and
+- `outdim`: the dimension of the space to be used by `predict` and
   `transform` methods, automatically set if `0` is given (default). If a non-zero
-  `out_dim` is passed, then the actual output dimension used is `min(rank, out_dim)`
+  `outdim` is passed, then the actual output dimension used is `min(rank, outdim)`
   where `rank` is the rank of the within-class covariance matrix.
 - `priors::Union{Nothing, Vector{Float64}}=nothing`: For use in prediction with Baye's
   rule. If `priors = nothing` then `priors` are estimated from the class proportions
