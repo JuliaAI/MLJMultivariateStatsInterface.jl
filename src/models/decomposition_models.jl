@@ -2,23 +2,6 @@
 #### PCA
 ####
 
-"""
-    PCA(; kwargs...)
-
-$PCA_DESCR
-
-# Keyword Parameters
-
-- `maxoutdim::Int=0`: maximum number of output dimensions, uses the smallest dimension of
-    training feature matrix if 0 (default).
-- `method::Symbol=:auto`: method to use to solve the problem, one of `:auto`,`:cov`
-    or `:svd`
-- `pratio::Float64=0.99`: ratio of variance preserved
-- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: if set to nothing(default)
-    centering will be computed and applied, if set to `0` no
-    centering(assumed pre-centered), if a vector is passed, the centering is done with
-    that vector.
-"""
 @mlj_model mutable struct PCA <: MMI.Unsupervised
     maxoutdim::Int = 0::(_ ≥ 0)
     method::Symbol = :auto::(_ in (:auto, :cov, :svd))
@@ -58,7 +41,6 @@ metadata_model(PCA,
     input=Table(Continuous),
     output=Table(Continuous),
     weights=false,
-    descr=PCA_DESCR,
     path="$(PKG).PCA"
 )
 
@@ -66,25 +48,6 @@ metadata_model(PCA,
 #### KernelPCA
 ####
 
-"""
-    KernelPCA(; kwargs...)
-
-$KPCA_DESCR
-
-# Keyword Parameters
-
-- `maxoutdim::Int = 0`: maximum number of output dimensions, uses the smallest
-    dimension of training feature matrix if 0 (default).
-- `kernel::Function=(x,y)->x'y`: kernel function of 2 vector arguments x and y, returns a
-    scalar value
-- `solver::Symbol=:auto`: solver to use for the eigenvalues, one of `:eig`(default),
-    `:eigs`
-- `inverse::Bool=true`: perform calculations needed for inverse transform
-- `beta::Real=1.0`: strength of the ridge regression that learns the inverse transform
-    when inverse is true
-- `tol::Real=0.0`: Convergence tolerance for eigs solver
-- `maxiter::Int=300`: maximum number of iterations for eigs solver
-"""
 @mlj_model mutable struct KernelPCA <: MMI.Unsupervised
     maxoutdim::Int = 0::(_ ≥ 0)
     kernel::Union{Nothing, Function} = default_kernel
@@ -124,7 +87,6 @@ metadata_model(
     input=Table(Continuous),
     output=Table(Continuous),
     weights=false,
-    descr=KPCA_DESCR,
     path="$(PKG).KernelPCA"
 )
 
@@ -133,27 +95,6 @@ metadata_model(
 #### ICA
 ####
 
-"""
-    ICA(; kwargs...)
-
-$ICA_DESCR
-
-# Keyword Parameters
-
-- `k::Int=0`: number of independent components to recover, set automatically if `0`
-- `alg::Symbol=:fastica`: algorithm to use (only `:fastica` is supported at the moment)
-- `fun::Symbol=:tanh`: approximate neg-entropy function, one of `:tanh`, `:gaus`
-- `do_whiten::Bool=true`: whether to perform pre-whitening
-- `maxiter::Int=100`: maximum number of iterations
-- `tol::Real=1e-6`: convergence tolerance for change in matrix W
-- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: mean to use, if nothing (default)
-    centering is computed andapplied, if zero, no centering, a vector of means can
-    be passed
-- `winit::Union{Nothing,Matrix{<:Real}}=nothing`: initial guess for matrix `W` either
-    an empty matrix (random initilization of `W`), a matrix of size `k × k` (if `do_whiten`
-    is true), a matrix of size `m × k` otherwise. If unspecified i.e `nothing` an empty
-    `Matrix{<:Real}` is used.
-"""
 @mlj_model mutable struct ICA <: MMI.Unsupervised
     outdim::Int = 0::(_ ≥ 0)
     alg::Symbol = :fastica::(_ in (:fastica,))
@@ -199,7 +140,6 @@ metadata_model(
     input=Table(Continuous),
     output=Table(Continuous),
     weights=false,
-    descr=ICA_DESCR,
     path="$(PKG).ICA"
 )
 
@@ -207,23 +147,6 @@ metadata_model(
 #### PPCA
 ####
 
-"""
-    PPCA(; kwargs...)
-
-$PPCA_DESCR
-
-# Keyword Parameters
-
-- `maxoutdim::Int=0`: maximum number of output dimensions, uses max(no_of_features - 1, 1)
-    if 0 (default).
-- `method::Symbol=:ml`: method to use to solve the problem, one of `:ml`, `:em`, `:bayes`.
-- `maxiter::Int=1000`: maximum number of iterations.
-- `tol::Real=1e-6`: convergence tolerance.
-- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: if set to nothing(default)
-    centering will be computed and applied, if set to `0` no
-    centering(assumed pre-centered), if a vector is passed, the centering is done with
-    that vector.
-"""
 @mlj_model mutable struct PPCA <: MMI.Unsupervised
     maxoutdim::Int = 0::(_ ≥ 0)
     method::Symbol = :ml::(_ in (:ml, :em, :bayes))
@@ -259,7 +182,6 @@ metadata_model(PPCA,
     input=Table(Continuous),
     output=Table(Continuous),
     weights=false,
-    descr=PPCA_DESCR,
     path="$(PKG).PPCA"
 )
 
@@ -267,24 +189,6 @@ metadata_model(PPCA,
 #### FactorAnalysis
 ####
 
-"""
-    FactorAnalysis(; kwargs...)
-
-$PPCA_DESCR
-
-# Keyword Parameters
-
-- `method::Symbol=:cm`: Method to use to solve the problem, one of `:ml`, `:em`, `:bayes`.
-- `maxoutdim::Int=0`: Maximum number of output dimensions, uses max(no_of_features - 1, 1)
-    if 0 (default).
-- `maxiter::Int=1000`: Maximum number of iterations.
-- `tol::Real=1e-6`: Convergence tolerance.
-- `eta::Real=tol`: Variance lower bound
-- `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: If set to nothing(default)
-    centering will be computed and applied, if set to `0` no
-    centering(assumed pre-centered), if a vector is passed, the centering is done with
-    that vector.
-"""
 @mlj_model mutable struct FactorAnalysis <: MMI.Unsupervised
     method::Symbol=:cm::(_ in (:em, :cm))
     maxoutdim::Int=0::(_ ≥ 0)
@@ -323,7 +227,6 @@ metadata_model(FactorAnalysis,
     input=Table(Continuous),
     output=Table(Continuous),
     weights=false,
-    descr=FactorAnalysis_DESCR,
     path="$(PKG).FactorAnalysis"
 )
 

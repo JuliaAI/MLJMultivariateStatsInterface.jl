@@ -1,37 +1,7 @@
 ####
 #### MulticlassLDA
 ####
-"""
-    LDA(; kwargs...)
 
-$LDA_DESCR
-
-# Keyword Parameters
-
-- `method::Symbol=:gevd`:  choice of solver, one of `:gevd` or `:whiten` methods
-- `cov_w::CovarianceEstimator`=SimpleCovariance: an estimator for the within-class
-    covariance (used in computing within-class scatter matrix, Sw), by default set
-    to the standard `MultivariateStats.SimpleCovariance()` but
-    could be set to any robust estimator from `CovarianceEstimation.jl`.
-- `cov_b::CovarianceEstimator`=SimpleCovariance: same as `cov_w` but for the between-class
-    covariance (used in computing between-class scatter matrix, Sb)
-- `out_dim::Int=0`: the output dimension, i.e dimension of the transformed space,
-    automatically set if 0 is given (default).
-- `regcoef::Float64=1e-6`: regularization coefficient (default value 1e-6). A positive
-    value `regcoef * eigmax(Sw)` where `Sw` is the within-class scatter matrix, is added
-    to the diagonal of Sw to improve numerical stability. This can be useful if using
-    the standard covariance estimator.
-- `dist::SemiMetric=SqEuclidean`: the distance metric to use when performing classification
-    (to compare the distance between a new point and centroids in the transformed space),
-    an alternative choice can be the `CosineDist`.Defaults to `SqEuclidean`
-
-See also the
-[package documentation](https://multivariatestatsjl.readthedocs.io/en/latest/lda.html).
-For more information about the algorithm, see the paper by Li, Zhu and Ogihara,
-[Using Discriminant Analysis for Multi-class Classification:
-An Experimental Investigation](http://citeseerx.ist.psu.edu/viewdoc/
-download?doi=10.1.1.89.7068&rep=rep1&type=pdf).
-"""
 @mlj_model mutable struct LDA <: MMI.Probabilistic
     method::Symbol = :gevd::(_ in (:gevd, :whiten))
     cov_w::CovarianceEstimator = MS.SimpleCovariance()
@@ -143,7 +113,6 @@ metadata_model(LDA,
     target=AbstractVector{<:Finite},
     weights=false,
     output=Table(Continuous),
-    descr=LDA_DESCR,
     path="$(PKG).LDA"
 )
 
@@ -152,37 +121,6 @@ metadata_model(LDA,
 #### BayesianLDA
 ####
 
-"""
-    BayesianLDA(; kwargs...)
-
-$BayesianLDA_DESCR
-
-# Keyword Parameters
-
-- `method::Symbol=:gevd`: choice of solver, one of `:gevd` or `:whiten` methods
-- `cov_w::CovarianceEstimator=SimpleCovariance()`: an estimator for the within-class
-    covariance (used in computing within-class scatter matrix, Sw), by default set to the
-    standard `MultivariateStats.CovarianceEstimator` but could be set to any robust
-    estimator from `CovarianceEstimation.jl`.
-- `cov_b::CovarianceEstimator=SimpleCovariance()`: same as `cov_w` but for the
-    between-class covariance(used in computing between-class scatter matrix, Sb).
-- `out_dim::Int=0`: the output dimension, i.e dimension of the transformed space,
-    automatically set if 0 is given (default).
-- `regcoef::Float64=1e-6`: regularization coefficient (default value 1e-6). A positive
-value `regcoef * eigmax(Sw)` where `Sw` is the within-class covariance estimator, is added
-    to the diagonal of Sw to improve numerical stability. This can be useful if using the
-    standard covariance estimator.
-- `priors::Union{Nothing, Vector{Float64}}=nothing`: For use in prediction with Baye's rule. If `priors = nothing` then
-    `priors` are estimated from the class proportions in the training data. Otherwise it
-    requires a `Vector` containing class probabilities with probabilities specified using
-    the order given by `levels(y)` where y is the target vector.
-
-See also the [package documentation](
-https://multivariatestatsjl.readthedocs.io/en/latest/lda.html).
-For more information about the algorithm, see the paper by Li, Zhu and Ogihara,
-[Using Discriminant Analysis for Multi-class Classification: An Experimental Investigation](
-http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.89.7068&rep=rep1&type=pdf).
-"""
 @mlj_model mutable struct BayesianLDA <: MMI.Probabilistic
     method::Symbol = :gevd::(_ in (:gevd, :whiten))
     cov_w::CovarianceEstimator=MS.SimpleCovariance()
@@ -313,27 +251,6 @@ metadata_model(
 #### SubspaceLDA
 ####
 
-"""
-    SubspaceLDA(; kwargs...)
-
-$SubspaceLDA_DESCR
-
-# Keyword Parameters
-
-- `normalize=true`: Option to normalize the between class variance for the number of
-    observations in each class, one of `true` or `false`.
-- `out_dim`: the dimension of the transformed space to be used by `predict` and
-    `transform` methods, automatically set if 0 is given (default).
-- `dist=SqEuclidean`: the distance metric to use when performing classification
-    (to compare the distance between a new point and centroids in the transformed space),
-    an alternative choice can be the `CosineDist`.
-
-See also the [package documentation](
-https://multivariatestatsjl.readthedocs.io/en/latest/lda.html).
-For more information about the algorithm, see the paper by Howland & Park (2006),
-"Generalizing discriminant analysis using the generalized singular value decomposition",
-IEEE Trans. Patt. Anal. & Mach. Int., 26: 995-1006.
-"""
 @mlj_model mutable struct SubspaceLDA <: MMI.Probabilistic
     normalize::Bool = true
     outdim::Int = 0::(_ ≥ 0)
@@ -392,7 +309,6 @@ metadata_model(
     target=AbstractVector{<:Finite},
     weights=false,
     output=Table(Continuous),
-    descr=SubspaceLDA_DESCR,
     path="$(PKG).SubspaceLDA"
 )
 
@@ -400,27 +316,6 @@ metadata_model(
 #### BayesianSubspaceLDA
 ####
 
-"""
-    BayesianSubspaceLDA(; kwargs...)
-
-$BayesianSubspaceLDA_DESCR
-
-# Keyword Parameters
-
-- `normalize::Bool=true`: Option to normalize the between class variance for the number of
-    observations in each class, one of `true` or `false`.
-- `out_dim::Int=0`: the dimension of the transformed space to be used by `predict` and
-    `transform` methods, automatically set if 0 is given (default).
-- `priors::Union{Nothing, Vector{Float64}}=nothing`: For use in prediction with Baye's
-    rule. If `priors = nothing` then `priors` are estimated from the class proportions
-    in the training data. Otherwise it requires a `Vector` containing class
-    probabilities with probabilities specified using the order given by `levels(y)`
-    where y is the target vector.
-
-For more information about the algorithm, see the paper by Howland & Park (2006),
-"Generalizing discriminant analysis using the generalized singular value decomposition"
-,IEEE Trans. Patt. Anal. & Mach. Int., 26: 995-1006.
-"""
 @mlj_model mutable struct BayesianSubspaceLDA <: MMI.Probabilistic
     normalize::Bool=false
     outdim::Int= 0::(_ ≥ 0)
@@ -524,6 +419,5 @@ metadata_model(
     target=AbstractVector{<:Finite},
     weights=false,
     output=Table(Continuous),
-    descr=BayesianSubspaceLDA_DESCR,
     path="$(PKG).BayesianSubspaceLDA"
 )

@@ -574,7 +574,7 @@ using LinearAlgebra
 
 ICA = @load ICA pkg=MultivariateStats
 
-time = 8 .\ 0:2001
+time = 8 .\\ 0:2001
 
 sine_wave = sin.(2*time)
 square_wave = sign.(sin.(3*time))
@@ -596,6 +596,7 @@ Xproj = transform(mach, X)
 
 See also
 [`PCA`](@ref), [`KernelPCA`](@ref), [`FactorAnalysis`](@ref), [`PPCA`](@ref)
+
 """
 ICA
 

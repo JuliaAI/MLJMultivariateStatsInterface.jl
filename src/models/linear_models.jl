@@ -1,6 +1,7 @@
 #######
 ## Common Regressor methods
 ########
+
 struct LinearFitresult{T, F<:Real, M<:AbstractArray{F}} <: MMI.MLJType
     sol_matrix::M
     bias::Bool
@@ -75,28 +76,10 @@ end
 #### LinearRegressor & MultitargetLinearRegressor
 ####
 
-"""
-    LinearRegressor(; bias::Bool=true)
-
-$LinearRegressor_DESCR
-
-# Keyword Parameters
-
-- `bias::Bool=true`: if true includes a bias term else fits without bias term.
-"""
 @mlj_model mutable struct LinearRegressor <: MMI.Deterministic
     bias::Bool = true
 end
 
-"""
-    MultitargetLinearRegressor(; bias::Bool=true)
-
-$MultitargetLinearRegressor_DESCR
-
-# Keyword Parameters
-
-- `bias::Bool=true`: if true includes a bias term else fits without bias term.
-"""
 @mlj_model mutable struct MultitargetLinearRegressor <: MMI.Deterministic
     bias::Bool = true
 end
@@ -127,33 +110,11 @@ end
 
 _check_typeof_lambda(x)= x isa AbstractVecOrMat || (x isa Real && x ≥ 0)
 
-"""
-    RidgeRegressor(; lambda::Union{Real, AbstractVecOrMat}=1.0, bias::Bool=true)
-
-$RidgeRegressor_DESCR
-
-# Keyword Parameters
-
-- `lambda::Union{Real, AbstractVecOrMat}=1.0`: non-negative parameter for the 
-    regularization strength.
-- `bias::Bool=true`: if true includes a bias term else fits without bias term.
-"""
 @mlj_model mutable struct RidgeRegressor <: MMI.Deterministic
     lambda::Union{Real, AbstractVecOrMat} = 1.0::(_check_typeof_lambda(_))
     bias::Bool = true
 end
 
-"""
-    MultitargetRidgeRegressor(; lambda::Union{Real, AbstractVecOrMat}=1.0, bias::Bool=true)
-
-$MultitargetRidgeRegressor_DESCR
-
-# Keyword Parameters
-
-- `lambda::Union{Real, AbstractVecOrMat}=1.0`: non-negative parameter for the 
-    regularization strength.
-- `bias::Bool=true`: if true includes a bias term else fits without bias term.
-"""
 @mlj_model mutable struct MultitargetRidgeRegressor <: MMI.Deterministic
     lambda::Union{Real, AbstractVecOrMat} = 1.0::(_check_typeof_lambda(_))
     bias::Bool = true
@@ -183,12 +144,12 @@ end
 ############
 ### Models Metadata
 ############
+
 metadata_model(
     LinearRegressor,
     input=Table(Continuous),
     target=AbstractVector{Continuous},
     weights=false,
-    descr=LinearRegressor_DESCR,
     path="$(PKG).LinearRegressor"
 )
 
@@ -197,7 +158,6 @@ metadata_model(
     input=Table(Continuous),
     target=Table(Continuous),
     weights=false,
-    descr=MultitargetLinearRegressor_DESCR,
     path="$(PKG).MultitargetLinearRegressor"
 )
 
@@ -206,7 +166,6 @@ metadata_model(
     input=Table(Continuous),
     target=AbstractVector{Continuous},
     weights=false,
-    descr=RidgeRegressor_DESCR ,
     path="$(PKG).RidgeRegressor"
 )
 
@@ -215,7 +174,6 @@ metadata_model(
     input=Table(Continuous),
     target=Table(Continuous),
     weights=false,
-    descr=MultitargetRidgeRegressor_DESCR,
     path="$(PKG).MultitargetRidgeRegressor"
 )
 
