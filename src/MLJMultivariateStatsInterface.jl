@@ -578,7 +578,7 @@ time = 8 .\ 0:2001
 
 sine_wave = sin.(2*time)
 square_wave = sign.(sin.(3*time))
-sawtooth_wave = repeat(collect(4 .\ 0:10), 182)
+sawtooth_wave = repeat(collect(0:10) / 4, 182)
 signal = [sine_wave, square_wave, sawtooth_wave]
 add_noise(x) = x + randn()
 signal = map((x -> add_noise.(x)), signal)
@@ -587,11 +587,11 @@ signal = permutedims(hcat(signal...))'
 mixing_matrix = [ 1 1 1; 0.5 2 1; 1.5 1 2]
 X = MLJ.table(signal * mixing_matrix)
 
-model = ICA(outim = 3, tol=0.1)
+model = ICA(k = 3, tol=0.1)
 mach = machine(model, X) |> fit! # this errors ERROR: MethodError: no method matching size(::MultivariateStats.ICA{Float64}, ::Int64)
 
 Xproj = transform(mach, X)
-sum(Xproj - signal)
+@info sum(abs, Xproj - signal)
 ```
 
 See also
