@@ -243,7 +243,6 @@ metadata_model(
     target= AbstractVector{<:Finite},
     weights=false,
     output=Table(Continuous),
-    descr=BayesianLDA_DESCR,
     path="$(PKG).BayesianLDA"
 )
 
