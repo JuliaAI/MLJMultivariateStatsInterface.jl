@@ -556,6 +556,7 @@ Train the machine using `fit!(mach, rows=...)`.
 The fields of `fitted_params(mach)` are:
 
 - `projection`: The estimated component matrix.
+
 - `mean`: The estimated mean vector.
 
 # Report
@@ -564,34 +565,42 @@ The fields of `report(mach)` are:
 
 - `indim`: Dimension (number of columns) of the training data and new data to be transformed.
 - `outdim`: Dimension of transformed data.
+
 - `mean`: The mean of the untransformed training data, of length `indim`.
 
 # Examples
 
 ```
 using MLJ
-using LinearAlgebra
 
 ICA = @load ICA pkg=MultivariateStats
 
-time = 8 .\\ 0:2001
+times = range(0, 8, length=2000)
 
-sine_wave = sin.(2*time)
-square_wave = sign.(sin.(3*time))
-sawtooth_wave = repeat(collect(0:10) / 4, 182)
-signal = [sine_wave, square_wave, sawtooth_wave]
-add_noise(x) = x + randn()
-signal = map((x -> add_noise.(x)), signal)
-signal = permutedims(hcat(signal...))'
+sine_wave = sin.(2*times)
+square_wave = sign.(sin.(3*times))
+sawtooth_wave = map(t -> mod(2t, 2) - 1, times)
+signals = hcat(sine_wave, square_wave, sawtooth_wave)
+noisy_signals = signals + 0.2*randn(size(signals))
 
 mixing_matrix = [ 1 1 1; 0.5 2 1; 1.5 1 2]
-X = MLJ.table(signal * mixing_matrix)
+X = MLJ.table(noisy_signals*mixing_matrix)
 
-model = ICA(k = 3, tol=0.1)
-mach = machine(model, X) |> fit! # this errors ERROR: MethodError: no method matching size(::MultivariateStats.ICA{Float64}, ::Int64)
+model = ICA(outdim = 3, tol=0.1)
+mach = machine(model, X) |> fit!
 
-Xproj = transform(mach, X)
-@info sum(abs, Xproj - signal)
+X_unmixed = transform(mach, X)
+
+using Plots
+
+plot(X.x2)
+plot(X.x2)
+plot(X.x3)
+
+plot(X_unmixed.x1)
+plot(X_unmixed.x2)
+plot(X_unmixed.x3)
+
 ```
 
 See also
@@ -611,7 +620,14 @@ possible the degree to which the target classes are separable can be discrimated
 either for dimension reduction of the features (see transform below) or for probabilistic
 classification of the target (see predict below).
 
-In the case of prediction, the class probability for a new observation reflects the proximity of that observation to training observations associated with that class, and how far away the observation is from those associated with other classes. Specifically, the distances, in the transformed (projected) space, of a new observation, from the centroid of each target class, is computed; the resulting vector of distances (times minus one) is passed to a softmax function to obtain a class probability prediction. Here "distance" is computed using a user-specified distance function.
+In the case of prediction, the class probability for a new observation reflects the
+proximity of that observation to training observations associated with that class, and how
+far away the observation is from those associated with other classes. Specifically, the
+distances, in the transformed (projected) space, of a new observation, from the centroid of
+each target class, is computed; the resulting vector of distances (times minus one) is
+passed to a softmax function to obtain a class probability prediction. Here "distance" is
+computed using a user-specified distance function.
+
 # Training data
 
 In MLJ or MLJBase, bind an instance `model` to data with
