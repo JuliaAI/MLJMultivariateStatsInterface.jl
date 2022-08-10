@@ -1,53 +1,23 @@
 ####
 #### MulticlassLDA
 ####
-"""
-    LDA(; kwargs...)
 
-$LDA_DESCR
-
-# Keyword Parameters
-
-- `method::Symbol=:gevd`:  choice of solver, one of `:gevd` or `:whiten` methods
-- `cov_w::CovarianceEstimator`=SimpleCovariance: an estimator for the within-class
-    covariance (used in computing within-class scatter matrix, Sw), by default set
-    to the standard `MultivariateStats.SimpleCovariance()` but
-    could be set to any robust estimator from `CovarianceEstimation.jl`.
-- `cov_b::CovarianceEstimator`=SimpleCovariance: same as `cov_w` but for the between-class
-    covariance (used in computing between-class scatter matrix, Sb)
-- `out_dim::Int=0`: the output dimension, i.e dimension of the transformed space,
-    automatically set if 0 is given (default).
-- `regcoef::Float64=1e-6`: regularization coefficient (default value 1e-6). A positive
-    value `regcoef * eigmax(Sw)` where `Sw` is the within-class scatter matrix, is added
-    to the diagonal of Sw to improve numerical stability. This can be useful if using
-    the standard covariance estimator.
-- `dist::SemiMetric=SqEuclidean`: the distance metric to use when performing classification
-    (to compare the distance between a new point and centroids in the transformed space),
-    an alternative choice can be the `CosineDist`.Defaults to `SqEuclidean`
-
-See also the
-[package documentation](https://multivariatestatsjl.readthedocs.io/en/latest/lda.html).
-For more information about the algorithm, see the paper by Li, Zhu and Ogihara,
-[Using Discriminant Analysis for Multi-class Classification:
-An Experimental Investigation](http://citeseerx.ist.psu.edu/viewdoc/
-download?doi=10.1.1.89.7068&rep=rep1&type=pdf).
-"""
 @mlj_model mutable struct LDA <: MMI.Probabilistic
     method::Symbol = :gevd::(_ in (:gevd, :whiten))
     cov_w::CovarianceEstimator = MS.SimpleCovariance()
     cov_b::CovarianceEstimator = MS.SimpleCovariance()
-    out_dim::Int = 0::(_ ≥ 0)
+    outdim::Int = 0::(_ ≥ 0)
     regcoef::Float64 = 1e-6::(_ ≥ 0)
     dist::SemiMetric = SqEuclidean()
 end
 
 function MMI.fit(model::LDA, ::Int, X, y)
-    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim =
+    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, outdim =
         _check_lda_data(model, X, y)
     core_res = MS.fit(
         MS.MulticlassLDA, nc, Xm_t, Int.(yplain);
         method=model.method,
-        outdim=out_dim,
+        outdim,
         regcoef=model.regcoef,
         covestimator_within=model.cov_w,
         covestimator_between=model.cov_b
@@ -55,13 +25,13 @@ function MMI.fit(model::LDA, ::Int, X, y)
     cache = nothing
     report = (
         classes=classes_seen,
-        out_dim=MS.size(core_res)[2],
-        class_means=MS.classmeans(core_res),
+        outdim=MS.size(core_res)[2],
+        projected_class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
         Sw=MS.withclass_scatter(core_res),
         Sb=MS.betweenclass_scatter(core_res),
-        nc=nc
+        nclasses=nc
     )
     fitresult = (core_res, classes_seen)
     return fitresult, cache, report
@@ -102,17 +72,17 @@ function _check_lda_data(model, X, y)
     # Check output dimension default is min(p, nc-1)
     def_outdim = min(p, nc - 1)
     # If unset (0) use the default; otherwise try to use the provided one
-    out_dim = ifelse(model.out_dim == 0, def_outdim, model.out_dim)
+    outdim = ifelse(model.outdim == 0, def_outdim, model.outdim)
     # Check if the given one is sensible
-    if out_dim > p
+    if outdim > p
         throw(
             ArgumentError(
-                "`out_dim` must not be larger than `p`"*
+                "`outdim` must not be larger than `p`"*
                 "where `p` is the number of features in `X`"
             )
         )
     end
-    return Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim
+    return Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, outdim
 end
 
 function MMI.fitted_params(::LDA, (core_res, classes_seen))
@@ -138,12 +108,13 @@ function MMI.predict(m::LDA, (core_res, classes_seen), Xnew)
     return MMI.UnivariateFinite(classes_seen, Pr)
 end
 
-metadata_model(LDA,
+metadata_model(
+    LDA,
+    human_name="linear discriminant analysis model",
     input=Table(Continuous),
     target=AbstractVector{<:Finite},
     weights=false,
     output=Table(Continuous),
-    descr=LDA_DESCR,
     path="$(PKG).LDA"
 )
 
@@ -152,48 +123,17 @@ metadata_model(LDA,
 #### BayesianLDA
 ####
 
-"""
-    BayesianLDA(; kwargs...)
-
-$BayesianLDA_DESCR
-
-# Keyword Parameters
-
-- `method::Symbol=:gevd`: choice of solver, one of `:gevd` or `:whiten` methods
-- `cov_w::CovarianceEstimator=SimpleCovariance()`: an estimator for the within-class
-    covariance (used in computing within-class scatter matrix, Sw), by default set to the
-    standard `MultivariateStats.CovarianceEstimator` but could be set to any robust
-    estimator from `CovarianceEstimation.jl`.
-- `cov_b::CovarianceEstimator=SimpleCovariance()`: same as `cov_w` but for the
-    between-class covariance(used in computing between-class scatter matrix, Sb).
-- `out_dim::Int=0`: the output dimension, i.e dimension of the transformed space,
-    automatically set if 0 is given (default).
-- `regcoef::Float64=1e-6`: regularization coefficient (default value 1e-6). A positive
-value `regcoef * eigmax(Sw)` where `Sw` is the within-class covariance estimator, is added
-    to the diagonal of Sw to improve numerical stability. This can be useful if using the
-    standard covariance estimator.
-- `priors::Union{Nothing, Vector{Float64}}=nothing`: For use in prediction with Baye's rule. If `priors = nothing` then
-    `priors` are estimated from the class proportions in the training data. Otherwise it
-    requires a `Vector` containing class probabilities with probabilities specified using
-    the order given by `levels(y)` where y is the target vector.
-
-See also the [package documentation](
-https://multivariatestatsjl.readthedocs.io/en/latest/lda.html).
-For more information about the algorithm, see the paper by Li, Zhu and Ogihara,
-[Using Discriminant Analysis for Multi-class Classification: An Experimental Investigation](
-http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.89.7068&rep=rep1&type=pdf).
-"""
 @mlj_model mutable struct BayesianLDA <: MMI.Probabilistic
     method::Symbol = :gevd::(_ in (:gevd, :whiten))
     cov_w::CovarianceEstimator=MS.SimpleCovariance()
     cov_b::CovarianceEstimator=MS.SimpleCovariance()
-    out_dim::Int=0::(_ ≥ 0)
+    outdim::Int=0::(_ ≥ 0)
     regcoef::Float64=1e-6::(_ ≥ 0)
     priors::Union{Nothing, Vector{Float64}}=nothing
 end
 
 function MMI.fit(model::BayesianLDA, ::Int, X, y)
-    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim =
+    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, outdim =
         _check_lda_data(model, X, y)
     ## If piors are specified check if they makes sense.
     ## This was put here to through errors much earlier
@@ -204,7 +144,7 @@ function MMI.fit(model::BayesianLDA, ::Int, X, y)
     core_res = MS.fit(
         MS.MulticlassLDA, nc, Xm_t, Int.(yplain);
         method=model.method,
-        outdim=out_dim,
+        outdim,
         regcoef=model.regcoef,
         covestimator_within=model.cov_w,
         covestimator_between=model.cov_b
@@ -220,13 +160,13 @@ function MMI.fit(model::BayesianLDA, ::Int, X, y)
     cache     = nothing
     report    = (
         classes=classes_seen,
-        out_dim=MS.size(core_res)[2],
-        class_means=MS.classmeans(core_res),
+        outdim=MS.size(core_res)[2],
+        projected_class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
         Sw=MS.withclass_scatter(core_res),
         Sb=MS.betweenclass_scatter(core_res),
-        nc=nc
+        nclasses=nc
     )
 
     fitresult = (core_res, classes_seen, priors, n)
@@ -301,11 +241,11 @@ end
 
 metadata_model(
     BayesianLDA,
+    human_name="Bayesian LDA model",
     input=Table(Continuous),
     target= AbstractVector{<:Finite},
     weights=false,
     output=Table(Continuous),
-    descr=BayesianLDA_DESCR,
     path="$(PKG).BayesianLDA"
 )
 
@@ -313,35 +253,14 @@ metadata_model(
 #### SubspaceLDA
 ####
 
-"""
-    SubspaceLDA(; kwargs...)
-
-$SubspaceLDA_DESCR
-
-# Keyword Parameters
-
-- `normalize=true`: Option to normalize the between class variance for the number of
-    observations in each class, one of `true` or `false`.
-- `out_dim`: the dimension of the transformed space to be used by `predict` and
-    `transform` methods, automatically set if 0 is given (default).
-- `dist=SqEuclidean`: the distance metric to use when performing classification
-    (to compare the distance between a new point and centroids in the transformed space),
-    an alternative choice can be the `CosineDist`.
-
-See also the [package documentation](
-https://multivariatestatsjl.readthedocs.io/en/latest/lda.html).
-For more information about the algorithm, see the paper by Howland & Park (2006),
-"Generalizing discriminant analysis using the generalized singular value decomposition",
-IEEE Trans. Patt. Anal. & Mach. Int., 26: 995-1006.
-"""
 @mlj_model mutable struct SubspaceLDA <: MMI.Probabilistic
     normalize::Bool = true
-    out_dim::Int = 0::(_ ≥ 0)
+    outdim::Int = 0::(_ ≥ 0)
     dist::SemiMetric = SqEuclidean()
 end
 
 function MMI.fit(model::SubspaceLDA, ::Int, X, y)
-    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim =
+    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, outdim =
         _check_lda_data(model, X, y)
 
     core_res = MS.fit(
@@ -356,23 +275,23 @@ function MMI.fit(model::SubspaceLDA, ::Int, X, y)
     report = (
         explained_variance_ratio=explained_variance_ratio,
         classes=classes_seen,
-        class_means=MS.classmeans(core_res),
+        projected_class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
-        nc=nc
+        nclasses=nc,
     )
-    fitresult = (core_res, out_dim, classes_seen)
+    fitresult = (core_res, outdim, classes_seen)
     return fitresult, cache, report
 end
 
 function MMI.fitted_params(::SubspaceLDA, (core_res, _))
-    return (class_means=MS.classmeans(core_res), projection_matrix=MS.projection(core_res))
+    return (projected_class_means=MS.classmeans(core_res), projection_matrix=MS.projection(core_res))
 end
 
-function MMI.predict(m::SubspaceLDA, (core_res, out_dim, classes_seen), Xnew)
+function MMI.predict(m::SubspaceLDA, (core_res, outdim, classes_seen), Xnew)
      # projection of Xnew, XWt is nt x o  where o = number of out dims
     # nt = number ot test samples
-    proj = core_res.projw * view(core_res.projLDA, :, 1:out_dim) #proj is the projection_matrix
+    proj = core_res.projw * view(core_res.projLDA, :, 1:outdim) #proj is the projection_matrix
     XWt = MMI.matrix(Xnew) * proj
     # centroids in the transformed space, nc x o
     centroids = transpose(core_res.cmeans) * proj
@@ -388,11 +307,11 @@ end
 
 metadata_model(
     SubspaceLDA,
+    human_name="subpace LDA model",
     input=Table(Continuous),
     target=AbstractVector{<:Finite},
     weights=false,
     output=Table(Continuous),
-    descr=SubspaceLDA_DESCR,
     path="$(PKG).SubspaceLDA"
 )
 
@@ -400,35 +319,14 @@ metadata_model(
 #### BayesianSubspaceLDA
 ####
 
-"""
-    BayesianSubspaceLDA(; kwargs...)
-
-$BayesianSubspaceLDA_DESCR
-
-# Keyword Parameters
-
-- `normalize::Bool=true`: Option to normalize the between class variance for the number of
-    observations in each class, one of `true` or `false`.
-- `out_dim::Int=0`: the dimension of the transformed space to be used by `predict` and
-    `transform` methods, automatically set if 0 is given (default).
-- `priors::Union{Nothing, Vector{Float64}}=nothing`: For use in prediction with Baye's
-    rule. If `priors = nothing` then `priors` are estimated from the class proportions
-    in the training data. Otherwise it requires a `Vector` containing class
-    probabilities with probabilities specified using the order given by `levels(y)`
-    where y is the target vector.
-
-For more information about the algorithm, see the paper by Howland & Park (2006),
-"Generalizing discriminant analysis using the generalized singular value decomposition"
-,IEEE Trans. Patt. Anal. & Mach. Int., 26: 995-1006.
-"""
 @mlj_model mutable struct BayesianSubspaceLDA <: MMI.Probabilistic
     normalize::Bool=false
-    out_dim::Int= 0::(_ ≥ 0)
+    outdim::Int= 0::(_ ≥ 0)
     priors::Union{Nothing, Vector{Float64}}=nothing
 end
 
 function MMI.fit(model::BayesianSubspaceLDA, ::Int, X, y)
-    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, out_dim =
+    Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, outdim =
         _check_lda_data(model, X, y)
     ## If piors are specified check if they makes sense.
     ## This was put here to through errors much earlier
@@ -456,12 +354,12 @@ function MMI.fit(model::BayesianSubspaceLDA, ::Int, X, y)
     report = (
         explained_variance_ratio=explained_variance_ratio,
         classes=classes_seen,
-        class_means=MS.classmeans(core_res),
+        projected_class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
-        nc=nc
+        nclasses=nc
     )
-    fitresult = (core_res, out_dim, classes_seen, priors, n, mult)
+    fitresult = (core_res, outdim, classes_seen, priors, n, mult)
     return fitresult, cache, report
 end
 
@@ -479,13 +377,13 @@ end
 
 function MMI.predict(
     m::BayesianSubspaceLDA,
-    (core_res, out_dim, classes_seen, priors, n, mult),
+    (core_res, outdim, classes_seen, priors, n, mult),
     Xnew
 )
     # projection of Xnew, XWt is nt x o  where o = number of out dims
     # nt = number ot test samples
     #proj is the projection_matrix
-    proj = core_res.projw * view(core_res.projLDA, :, 1:out_dim)
+    proj = core_res.projw * view(core_res.projLDA, :, 1:outdim)
     XWt = MMI.matrix(Xnew) * proj
 
     # centroids in the transformed space, nc x o
@@ -510,9 +408,9 @@ function MMI.predict(
     return MMI.UnivariateFinite(classes_seen, Pr)
 end
 
-function MMI.transform(m::T, (core_res, out_dim, _), X) where T<:Union{SubspaceLDA, BayesianSubspaceLDA}
+function MMI.transform(m::T, (core_res, outdim, _), X) where T<:Union{SubspaceLDA, BayesianSubspaceLDA}
     # projection of X, XWt is nt x o  where o = out dims
-    proj = core_res.projw * view(core_res.projLDA, :, 1:out_dim)
+    proj = core_res.projw * view(core_res.projLDA, :, 1:outdim)
     #proj is the projection_matrix
     XWt = MMI.matrix(X) * proj
     return MMI.table(XWt, prototype = X)
@@ -520,10 +418,486 @@ end
 
 metadata_model(
     BayesianSubspaceLDA,
+    human_name="Bayesian subspace LDA model",
     input=Table(Continuous),
     target=AbstractVector{<:Finite},
     weights=false,
     output=Table(Continuous),
-    descr=BayesianSubspaceLDA_DESCR,
     path="$(PKG).BayesianSubspaceLDA"
 )
+
+
+# # DOCUMENT STRINGS
+
+"""
+$(MMI.doc_header(LDA))
+
+[Multiclass linear discriminant
+analysis](https://en.wikipedia.org/wiki/Linear_discriminant_analysis) learns a projection in
+a space of features to a lower dimensional space, in a way that attempts to preserve as much
+as possible the degree to which the classes of a discrete target variable can be
+discriminated. This can be used either for dimension reduction of the features (see
+`transform` below) or for probabilistic classification of the target (see `predict` below).
+
+In the case of prediction, the class probability for a new observation reflects the
+proximity of that observation to training observations associated with that class, and how
+far away the observation is from observations associated with other classes. Specifically,
+the distances, in the transformed (projected) space, of a new observation, from the centroid
+of each target class, is computed; the resulting vector of distances, multiplied by minus
+one, is passed to a softmax function to obtain a class probability prediction. Here
+"distance" is computed using a user-specified distance function.
+
+# Training data
+
+In MLJ or MLJBase, bind an instance `model` to data with
+
+    mach = machine(model, X, y)
+
+Here:
+
+- `X` is any table of input features (eg, a `DataFrame`) whose columns
+are of scitype `Continuous`; check column scitypes with `schema(X)`.
+
+- `y` is the target, which can be any `AbstractVector` whose element
+  scitype is `OrderedFactor` or `Multiclass`; check the scitype
+  with `scitype(y)`
+
+Train the machine using `fit!(mach, rows=...)`.
+
+# Hyper-parameters
+
+- `method::Symbol=:gevd`: The solver, one of `:gevd` or `:whiten` methods.
+
+- `cov_w::StatsBase.SimpleCovariance()`: An estimator for the within-class
+  covariance (used in computing the within-class scatter matrix, `Sw`). Any robust estimator
+  from `CovarianceEstimation.jl` can be used.
+
+- `cov_b::StatsBase.SimpleCovariance()`: The same as `cov_w` but for the
+  between-class covariance (used in computing the between-class scatter matrix, `Sb`).
+
+- `outdim::Int=0`: The output dimension, i.e dimension of the transformed space,
+  automatically set if equal to 0.
+
+- `regcoef::Float64=1e-6`: The regularization coefficient. A positive value
+  `regcoef*eigmax(Sw)` where `Sw` is the within-class scatter matrix, is added to the
+  diagonal of `Sw` to improve numerical stability. This can be useful if using the standard
+  covariance estimator.
+
+- `dist=Distances.SqEuclidean()`: The distance metric to use when performing classification
+  (to compare the distance between a new point and centroids in the transformed space); must
+  be a subtype of `Distances.SemiMetric` from Distances.jl, e.g., `Distances.CosineDist`.
+
+# Operations
+
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
+  should have the same scitype as `X` above.
+
+- `predict(mach, Xnew)`: Return predictions of the target given features `Xnew` having the
+  same scitype as `X` above. Predictions are probabilistic but uncalibrated.
+
+- `predict_mode(mach, Xnew)`: Return the modes of the probabilistic predictions returned
+  above.
+
+
+# Fitted parameters
+
+The fields of `fitted_params(mach)` are:
+
+- `projected_class_means`: The matrix comprised of class-specific means as columns, of size
+  `(indim, nclasses)`, where `indim` is the number of input features (columns) and
+  `nclasses` the number of target classes.
+
+- `projection_matrix`: The learned projection matrix, of size `(indim, outdim)`, where
+ `indim` and `outdim` are the input and output dimensions respectively.
+
+# Report
+
+The fields of `report(mach)` are:
+
+- `classes`: The classes seen during model fitting.
+
+- `outdim`: The dimensions the model is projected to.
+
+- `projected_class_means`: The matrix comprised of class-specific means as
+  columns (see above).
+
+- `mean`: The mean of the untransformed training data, of length `indim`.
+
+- `class_weights`: The weights of each class.
+
+- `Sb`: The between class scatter matrix.
+
+- `Sw`: The within class scatter matrix.
+
+- `nclasses`: The number of classes directly observed in the training data (which can be
+  less than the total number of classes in the class pool)
+
+# Examples
+
+```
+using MLJ
+
+LDA = @load LDA pkg=MultivariateStats
+
+X, y = @load_iris # a table and a vector
+
+model = LDA()
+mach = machine(model, X, y) |> fit!
+
+Xproj = transform(mach, X)
+y_hat = predict(mach, X)
+labels = predict_mode(mach, X)
+
+```
+
+See also [`BayesianLDA`](@ref), [`SubspaceLDA`](@ref), [`BayesianSubspaceLDA`](@ref)
+
+"""
+LDA
+
+"""
+
+$(MMI.doc_header(BayesianLDA))
+
+The Bayesian multiclass LDA algorithm learns a projection matrix as described in ordinary
+[`LDA`](@ref).  Predicted class posterior probability distributions are derived by applying
+Bayes' rule with a multivariate Gaussian class-conditional distribution. A prior class
+distribution can be specified by the user or inferred from training data class frequency.
+
+See also the [package
+documentation](https://multivariatestatsjl.readthedocs.io/en/latest/lda.html).  For more
+information about the algorithm, see [Li, Zhu and Ogihara (2006): Using Discriminant
+Analysis for Multi-class Classification: An Experimental
+Investigation](https://doi.org/10.1007/s10115-006-0013-y).
+
+# Training data
+
+In MLJ or MLJBase, bind an instance `model` to data with
+
+    mach = machine(model, X, y)
+
+Here:
+
+- `X` is any table of input features (eg, a `DataFrame`) whose columns are of scitype
+  `Continuous`; check column scitypes with `schema(X)`.
+
+- `y` is the target, which can be any `AbstractVector` whose element scitype is
+  `OrderedFactor` or `Multiclass`; check the scitype with `scitype(y)`
+
+Train the machine using `fit!(mach, rows=...)`.
+
+# Hyper-parameters
+
+- `method::Symbol=:gevd`: choice of solver, one of `:gevd` or `:whiten` methods.
+
+- `cov_w::StatsBase.SimpleCovariance()`: An estimator for the within-class
+  covariance (used in computing the within-class scatter matrix, `Sw`). Any robust estimator
+  from `CovarianceEstimation.jl` can be used.
+
+- `cov_b::StatsBase.SimpleCovariance()`: The same as `cov_w` but for the
+  between-class covariance (used in computing the between-class scatter matrix, `Sb`).
+
+- `outdim::Int=0`: The output dimension, i.e., dimension of the transformed space,
+  automatically set if equal to 0.
+
+- `regcoef::Float64=1e-6`: The regularization coefficient. A positive value
+  `regcoef*eigmax(Sw)` where `Sw` is the within-class scatter matrix, is added to the
+  diagonal of `Sw` to improve numerical stability. This can be useful if using the standard
+  covariance estimator.
+
+- `priors::Union{Nothing, Vector{Float64}}=nothing`: For use in prediction with Bayes'
+  rule. If `priors = nothing` then `priors` are estimated from the class proportions in the
+  training data. Otherwise it requires a `Vector` containing class probabilities with
+  probabilities specified using the order given by `levels(y)`, where `y` is the training
+  target.
+
+# Operations
+
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
+  should have the same scitype as `X` above.
+
+- `predict(mach, Xnew)`: Return predictions of the target given features `Xnew`, which
+  should have the same scitype as `X` above. Predictions are probabilistic but uncalibrated.
+
+- `predict_mode(mach, Xnew)`: Return the modes of the probabilistic predictions returned
+  above.
+
+
+# Fitted parameters
+
+The fields of `fitted_params(mach)` are:
+
+- `projected_class_means`: The matrix comprised of class-specific means as columns, of size
+  `(indim, nclasses)`, where `indim` is the number of input features (columns) and
+  `nclasses` the number of target classes.
+
+- `projection_matrix`: The learned projection matrix, of size `(indim, outdim)`, where
+ `indim` and `outdim` are the input and output dimensions respectively.
+
+- `priors`: The class priors for classification. As inferred from training target `y`, if
+  not user-specified. A vector with order consistent with `levels(y)`.
+
+# Report
+
+The fields of `report(mach)` are:
+
+- `classes`: The classes seen during model fitting.
+
+- `outdim`: The dimensions the model is projected to.
+
+- `projected_class_means`: The matrix comprised of class-specific means as columns (see
+  above).
+
+- `mean`: The mean of the untransformed training data, of length `indim`.
+
+- `class_weights`: The weights of each class.
+
+- `Sb`: The between class scatter matrix.
+
+- `Sw`: The within class scatter matrix.
+
+- `nclasses`: The number of classes directly observed in the training data (which can be
+  less than the total number of classes in the class pool)
+
+# Examples
+
+```
+using MLJ
+
+BayesianLDA = @load BayesianLDA pkg=MultivariateStats
+
+X, y = @load_iris # a table and a vector
+
+model = BayesianLDA()
+mach = machine(model, X, y) |> fit!
+
+Xproj = transform(mach, X)
+y_hat = predict(mach, X)
+labels = predict_mode(mach, X)
+```
+
+See also [`LDA`](@ref), [`SubspaceLDA`](@ref), [`BayesianSubspaceLDA`](@ref)
+
+"""
+BayesianLDA
+
+"""
+
+$(MMI.doc_header(SubspaceLDA))
+
+Multiclass subspace linear discriminant analysis (LDA) is a variation on ordinary
+[`LDA`](@ref) suitable for high dimensional data, as it avoids storing scatter matrices. For
+details, refer the [MultivariateStats.jl
+documentation](https://juliastats.org/MultivariateStats.jl/stable/).
+
+In addition to dimension reduction (using `transform`) probabilistic classification is
+provided (using `predict`).  In the case of classification, the class probability for a new
+observation reflects the proximity of that observation to training observations associated
+with that class, and how far away the observation is from observations associated with other
+classes. Specifically, the distances, in the transformed (projected) space, of a new
+observation, from the centroid of each target class, is computed; the resulting vector of
+distances, multiplied by minus one, is passed to a softmax function to obtain a class
+probability prediction. Here "distance" is computed using a user-specified distance
+function.
+
+# Training data
+
+In MLJ or MLJBase, bind an instance `model` to data with
+
+    mach = machine(model, X, y)
+
+Here:
+
+- `X` is any table of input features (eg, a `DataFrame`) whose columns
+are of scitype `Continuous`; check column scitypes with `schema(X)`.
+
+- `y` is the target, which can be any `AbstractVector` whose element
+  scitype is `OrderedFactor` or `Multiclass`; check the scitype
+  with `scitype(y)`.
+
+Train the machine using `fit!(mach, rows=...)`.
+
+# Hyper-parameters
+
+- `normalize=true`: Option to normalize the between class variance for the number of
+  observations in each class, one of `true` or `false`.
+
+- `outdim`: the ouput dimension, automatically set if equal to `0`. If a non-zero `outdim`
+  is passed, then the actual output dimension used is `min(rank, outdim)` where `rank` is
+  the rank of the within-class covariance matrix.
+
+- `dist=Distances.SqEuclidean()`: The distance metric to use when performing classification
+  (to compare the distance between a new point and centroids in the transformed space); must
+  be a subtype of `Distances.SemiMetric` from Distances.jl, e.g., `Distances.CosineDist`.
+
+
+# Operations
+
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
+  should have the same scitype as `X` above.
+
+- `predict(mach, Xnew)`: Return predictions of the target given features `Xnew`, which
+  should have same scitype as `X` above. Predictions are probabilistic but uncalibrated.
+
+- `predict_mode(mach, Xnew)`: Return the modes of the probabilistic predictions
+  returned above.
+
+
+# Fitted parameters
+
+The fields of `fitted_params(mach)` are:
+
+- `projected_class_means`: The matrix comprised of class-specific means as columns, of size
+  `(indim, nclasses)`, where `indim` is the number of input features (columns) and
+  `nclasses` the number of target classes.
+
+- `projection_matrix`: The learned projection matrix, of size `(indim, outdim)`, where
+  `indim` and `outdim` are the input and output dimensions respectively.
+
+# Report
+
+The fields of `report(mach)` are:
+
+- `explained_variance_ratio`: The ratio of explained variance to total variance. Each
+  dimension corresponds to an eigenvalue.
+
+- `classes`: The classes seen during model fitting.
+
+- `projected_class_means`: The matrix comprised of class-specific means as columns (see
+  above).
+
+- `mean`: The mean of the untransformed training data, of length `indim`.
+
+- `class_weights`: The weights of each class.
+
+- `nclasses`: The number of classes directly observed in the training data (which can be
+  less than the total number of classes in the class pool)
+
+# Examples
+
+```
+using MLJ
+
+SubspaceLDA = @load SubspaceLDA pkg=MultivariateStats
+
+X, y = @load_iris # a table and a vector
+
+model = SubspaceLDA()
+mach = machine(model, X, y) |> fit!
+
+Xproj = transform(mach, X)
+y_hat = predict(mach, X)
+labels = predict_mode(mach, X)
+```
+
+See also [`LDA`](@ref), [`BayesianLDA`](@ref), [`BayesianSubspaceLDA`](@ref)
+
+"""
+SubspaceLDA
+
+"""
+$(MMI.doc_header(BayesianSubspaceLDA))
+
+The Bayesian multiclass subspace linear discriminant analysis algorithm learns a projection
+matrix as described in [`SubspaceLDA`](@ref). The posterior class probability distribution
+is derived as in [`BayesianLDA`](@ref).
+
+
+# Training data
+
+In MLJ or MLJBase, bind an instance `model` to data with
+
+    mach = machine(model, X, y)
+
+Here:
+
+- `X` is any table of input features (eg, a `DataFrame`) whose columns are of scitype
+  `Continuous`; check column scitypes with `schema(X)`.
+
+- `y` is the target, which can be any `AbstractVector` whose element scitype is
+  `OrderedFactor` or `Multiclass`; check the scitype with `scitype(y)`.
+
+Train the machine using `fit!(mach, rows=...)`.
+
+# Hyper-parameters
+
+- `normalize=true`: Option to normalize the between class variance for the number of
+  observations in each class, one of `true` or `false`.
+
+- `outdim`: the ouput dimension, automatically set if equal to `0`. If a non-zero `outdim`
+  is passed, then the actual output dimension used is `min(rank, outdim)` where `rank` is
+  the rank of the within-class covariance matrix.
+
+- `priors::Union{Nothing, Vector{Float64}}=nothing`: For use in prediction with Bayes'
+  rule. If `priors = nothing` then `priors` are estimated from the class proportions
+  in the training data. Otherwise it requires a `Vector` containing class
+  probabilities with probabilities specified using the order given by `levels(y)`
+  where `y` is the training target.
+
+
+# Operations
+
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
+  should have the same scitype as `X` above.
+
+- `predict(mach, Xnew)`: Return predictions of the target given features `Xnew`, which
+  should have same scitype as `X` above. Predictions are probabilistic but uncalibrated.
+
+- `predict_mode(mach, Xnew)`: Return the modes of the probabilistic predictions
+  returned above.
+
+
+# Fitted parameters
+
+The fields of `fitted_params(mach)` are:
+
+- `projected_class_means`: The matrix comprised of class-specific means as columns,
+  of size `(indim, nclasses)`, where `indim` is the number of input features (columns) and
+  `nclasses` the number of target classes.
+
+- `projection_matrix`: The learned projection matrix, of size `(indim, outdim)`, where
+ `indim` and `outdim` are the input and output dimensions respectively.
+
+- `priors`: The class priors for classification. As inferred from training target `y`,
+  if not user-specified. A vector with order consistent with `levels(y)`.
+
+# Report
+
+The fields of `report(mach)` are:
+
+- `explained_variance_ratio`: The ratio of explained variance to total variance. Each
+  dimension corresponds to an eigenvalue.
+
+- `classes`: The classes seen during model fitting.
+
+- `projected_class_means`: The matrix comprised of class-specific means as columns (see
+  above).
+
+- `mean`: The mean of the untransformed training data, of length `indim`.
+
+- `class_weights`: The weights of each class.
+
+- `nclasses`: The number of classes directly observed in the training data (which can be
+  less than the total number of classes in the class pool)
+
+# Examples
+
+```
+using MLJ
+
+BayesianSubspaceLDA = @load BayesianSubspaceLDA pkg=MultivariateStats
+
+X, y = @load_iris # a table and a vector
+
+model = BayesianSubspaceLDA()
+mach = machine(model, X, y) |> fit!
+
+Xproj = transform(mach, X)
+y_hat = predict(mach, X)
+labels = predict_mode(mach, X)
+```
+
+See also [`LDA`](@ref), [`BayesianLDA`](@ref), [`SubspaceLDA`](@ref)
+
+"""
+BayesianSubspaceLDA

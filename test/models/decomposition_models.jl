@@ -2,15 +2,15 @@ X, y = @load_crabs
 
 @testset "PCA" begin
     X_array = matrix(X)
-    pratio = 0.9999
+    variance_ratio = 0.9999
     # MultivariateStats PCA
     pca_ms = MultivariateStats.fit(
         MultivariateStats.PCA,
         permutedims(X_array),
-        pratio=pratio
+        pratio=variance_ratio
     )
     # MLJ PCA
-    pca_mlj = PCA(pratio=pratio)
+    pca_mlj = PCA(variance_ratio=variance_ratio)
     test_composition_model(pca_ms, pca_mlj, X, X_array)
 end
 
@@ -28,7 +28,7 @@ end
 
 @testset "ICA" begin
     X_array = matrix(X)
-    k = 5
+    outdim = 5
     tolerance = 5.0
     # MultivariateStats ICA
     rng = StableRNG(1234) # winit gets randomly initialised
@@ -36,22 +36,23 @@ end
     ica_ms = MultivariateStats.fit(
         MultivariateStats.ICA,
         permutedims(X_array),
-        k;
+        outdim;
         tol=tolerance,
-        winit = randn(rng, eltype(X_array), size(X_array, 2), k)
+        winit = randn(rng, eltype(X_array), size(X_array, 2), outdim)
     )
     # MLJ ICA
     rng = StableRNG(1234) # winit gets randomly initialised
     #Random.seed!(1234) # winit gets randomly initialised
     ica_mlj = ICA(
-        k=k,
+        outdim=outdim,
         tol=tolerance,
-        winit=randn(rng, eltype(X_array), size(X_array, 2), k))
+        winit=randn(rng, eltype(X_array), size(X_array, 2), outdim))
     test_composition_model(ica_ms, ica_mlj, X, X_array, test_inverse=false)
 end
+
 @testset "ICA2" begin
     X_array = matrix(X)
-    k = 5
+    outdim = 5
     tolerance = 5.0
     # MultivariateStats ICA
     rng = StableRNG(1234) # winit gets randomly initialised
@@ -59,19 +60,19 @@ end
     ica_ms = MultivariateStats.fit(
         MultivariateStats.ICA,
         permutedims(X_array),
-        k;
+        outdim;
         tol=tolerance,
         fun=MultivariateStats.Gaus(),
-        winit = randn(rng, eltype(X_array), size(X_array, 2), k)
+        winit = randn(rng, eltype(X_array), size(X_array, 2), outdim)
     )
     # MLJ ICA
     rng = StableRNG(1234) # winit gets randomly initialised
     #Random.seed!(1234) # winit gets randomly initialised
     ica_mlj = ICA(
-        k=k,
+        outdim=outdim,
         tol=tolerance,
         fun=:gaus,
-        winit=randn(rng, eltype(X_array), size(X_array, 2), k))
+        winit=randn(rng, eltype(X_array), size(X_array, 2), outdim))
     test_composition_model(ica_ms, ica_mlj, X, X_array, test_inverse=false)
 end
 
