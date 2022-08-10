@@ -76,8 +76,8 @@ metadata_pkg.(
 
 $(MMI.doc_header(LinearRegressor))
 
-`LinearRegressor` assumes the target is a continuous variable and trains a linear prediction
-function using the least squares algorithm. Options exist to specify a bias term.`
+`LinearRegressor` assumes the target is a `Continuous` variable and trains a linear
+prediction function using the least squares algorithm. Options exist to specify a bias term.
 
 # Training data
 
@@ -102,7 +102,7 @@ Train the machine using `fit!(mach, rows=...)`.
 # Operations
 
 - `predict(mach, Xnew)`: Return predictions of the target given new
-  features `Xnew` having the same scitype as `X` above.
+  features `Xnew`, which should have the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -163,7 +163,7 @@ Train the machine using `fit!(mach, rows=...)`.
 # Operations
 
 - `predict(mach, Xnew)`: Return predictions of the target given new
-  features `Xnew` having the same scitype as `X` above.
+  features `Xnew`, which should have the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -232,7 +232,7 @@ Train the machine using `fit!(mach, rows=...)`.
 # Operations
 
 - `predict(mach, Xnew)`: Return predictions of the target given new
-  features `Xnew` having the same scitype as `X` above.
+  features `Xnew`, which should have the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -300,7 +300,7 @@ Train the machine using `fit!(mach, rows=...)`.
 # Operations
 
 - `predict(mach, Xnew)`: Return predictions of the target given new
-  features `Xnew` having the same scitype as `X` above.
+  features `Xnew`, which should have the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -348,8 +348,8 @@ In MLJ or MLJBase, bind an instance `model` to data with
 
 Here:
 
-- `X` is any table of input features (eg, a `DataFrame`) whose columns
-are of scitype `Continuous`; check column scitypes with `schema(X)`.
+- `X` is any table of input features (eg, a `DataFrame`) whose columns are of scitype
+  `Continuous`; check column scitypes with `schema(X)`.
 
 Train the machine using `fit!(mach, rows=...)`.
 
@@ -379,8 +379,8 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew` having
-  the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
+  should have the same scitype as `X` above.
 
 - `inverse_transform(mach, Xsmall)`: For a dimension-reduced table `Xsmall`,
   such as returned by `transform`, reconstruct a table, having same the number
@@ -452,8 +452,8 @@ In MLJ or MLJBase, bind an instance `model` to data with
 
 Here:
 
-- `X` is any table of input features (eg, a `DataFrame`) whose columns
-are of scitype `Continuous`; check column scitypes with `schema(X)`.
+- `X` is any table of input features (eg, a `DataFrame`) whose columns are of scitype
+  `Continuous`; check column scitypes with `schema(X)`.
 
 Train the machine using `fit!(mach, rows=...)`.
 
@@ -480,8 +480,8 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew` having
-  the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
+  should have the same scitype as `X` above.
 
 - `inverse_transform(mach, Xsmall)`: For a dimension-reduced table `Xsmall`, such as
   returned by `transform`, reconstruct a table, having same the number of columns as the
@@ -646,9 +646,9 @@ $(MMI.doc_header(LDA))
 [Multiclass linear discriminant
 analysis](https://en.wikipedia.org/wiki/Linear_discriminant_analysis) learns a projection in
 a space of features to a lower dimensional space, in a way that attempts to preserve as much
-as possible the degree to which the target classes can be discriminated. This can be used
-either for dimension reduction of the features (see `transform` below) or for probabilistic
-classification of the target (see `predict` below).
+as possible the degree to which the classes of a discrete target variable can be
+discriminated. This can be used either for dimension reduction of the features (see
+`transform` below) or for probabilistic classification of the target (see `predict` below).
 
 In the case of prediction, the class probability for a new observation reflects the
 proximity of that observation to training observations associated with that class, and how
@@ -700,8 +700,8 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew` having
-  the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
+  should have the same scitype as `X` above.
 
 - `predict(mach, Xnew)`: Return predictions of the target given features `Xnew` having the
   same scitype as `X` above. Predictions are probabilistic but uncalibrated.
@@ -715,8 +715,8 @@ Train the machine using `fit!(mach, rows=...)`.
 The fields of `fitted_params(mach)` are:
 
 - `projected_class_means`: The matrix comprised of class-specific means as columns, of size
-  `(indim, nclasses)`, where `indim` is the number of input features (columns) and `nclasses` the
-  number of target classes.
+  `(indim, nclasses)`, where `indim` is the number of input features (columns) and
+  `nclasses` the number of target classes.
 
 - `projection_matrix`: The learned projection matrix, of size `(indim, outdim)`, where
  `indim` and `outdim` are the input and output dimensions respectively.
@@ -827,8 +827,8 @@ Train the machine using `fit!(mach, rows=...)`.
 - `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
   should have the same scitype as `X` above.
 
-- `predict(mach, Xnew)`: Return predictions of the target given features `Xnew` having the
-  same scitype as `X` above. Predictions are probabilistic but uncalibrated.
+- `predict(mach, Xnew)`: Return predictions of the target given features `Xnew`, which
+  should have the same scitype as `X` above. Predictions are probabilistic but uncalibrated.
 
 - `predict_mode(mach, Xnew)`: Return the modes of the probabilistic predictions returned
   above.
@@ -947,8 +947,8 @@ Train the machine using `fit!(mach, rows=...)`.
 - `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
   should have the same scitype as `X` above.
 
-- `predict(mach, Xnew)`: Return predictions of the target given features `Xnew` having the
-  same scitype as `X` above. Predictions are probabilistic but uncalibrated.
+- `predict(mach, Xnew)`: Return predictions of the target given features `Xnew`, which
+  should have same scitype as `X` above. Predictions are probabilistic but uncalibrated.
 
 - `predict_mode(mach, Xnew)`: Return the modes of the probabilistic predictions
   returned above.
@@ -1051,8 +1051,8 @@ Train the machine using `fit!(mach, rows=...)`.
 - `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
   should have the same scitype as `X` above.
 
-- `predict(mach, Xnew)`: Return predictions of the target given features `Xnew` having the
-  same scitype as `X` above. Predictions are probabilistic but uncalibrated.
+- `predict(mach, Xnew)`: Return predictions of the target given features `Xnew`, which
+  should have same scitype as `X` above. Predictions are probabilistic but uncalibrated.
 
 - `predict_mode(mach, Xnew)`: Return the modes of the probabilistic predictions
   returned above.
@@ -1214,7 +1214,7 @@ FactorAnalysis
 
 $(MMI.doc_header(PPCA))
 
-Probabilistic principal component analysis is a dimension reduction algorithm which
+Probabilistic principal component analysis is a dimension-reduction algorithm which
 represents a constrained form of the Gaussian distribution in which the number of free
 parameters can be restricted while still allowing the model to capture the dominant
 correlations in a data set. It is expressed as the maximum likelihood solution of a

@@ -11,7 +11,7 @@ end
 _convert(common_type, x::AbstractVector) = convert(AbstractVector{common_type}, x)
 _convert(common_type, x::AbstractMatrix) = convert(AbstractMatrix{common_type}, MMI.matrix(x))
 matrix_(X::AbstractVector) = X
-matrix_(X) = MMI.matrix(X) 
+matrix_(X) = MMI.matrix(X)
 _names(y::AbstractVector) = nothing
 _names(Y) = collect(MMI.schema(Y).names)
 
@@ -60,7 +60,7 @@ function _predict_regressor(
             Xmat_new * @view(fr.sol_matrix[1:end-1, :]) .+ transpose(
                 @view(fr.sol_matrix[end, :])
             );
-            names=fr.names, 
+            names=fr.names,
             prototype=prototype
         )
     else
@@ -176,4 +176,3 @@ metadata_model(
     weights=false,
     path="$(PKG).MultitargetRidgeRegressor"
 )
-

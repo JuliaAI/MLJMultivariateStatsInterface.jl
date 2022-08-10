@@ -108,7 +108,9 @@ function MMI.predict(m::LDA, (core_res, classes_seen), Xnew)
     return MMI.UnivariateFinite(classes_seen, Pr)
 end
 
-metadata_model(LDA,
+metadata_model(
+    LDA,
+    human_name="linear discriminant analysis model",
     input=Table(Continuous),
     target=AbstractVector{<:Finite},
     weights=false,
@@ -239,6 +241,7 @@ end
 
 metadata_model(
     BayesianLDA,
+    human_name="Bayesian LDA model",
     input=Table(Continuous),
     target= AbstractVector{<:Finite},
     weights=false,
@@ -304,6 +307,7 @@ end
 
 metadata_model(
     SubspaceLDA,
+    human_name="subpace LDA model",
     input=Table(Continuous),
     target=AbstractVector{<:Finite},
     weights=false,
@@ -414,6 +418,7 @@ end
 
 metadata_model(
     BayesianSubspaceLDA,
+    human_name="Bayesian subspace LDA model",
     input=Table(Continuous),
     target=AbstractVector{<:Finite},
     weights=false,

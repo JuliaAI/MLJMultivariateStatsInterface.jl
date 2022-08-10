@@ -84,6 +84,7 @@ end
 
 metadata_model(
     KernelPCA,
+    human_name="kernel prinicipal component analysis model",
     input=Table(Continuous),
     output=Table(Continuous),
     weights=false,
@@ -137,6 +138,7 @@ end
 
 metadata_model(
     ICA,
+    human_name="independent component analysis model",
     input=Table(Continuous),
     output=Table(Continuous),
     weights=false,
@@ -178,7 +180,9 @@ function MMI.fit(model::PPCA, verbosity::Int, X)
     return fitresult, cache, report
 end
 
-metadata_model(PPCA,
+metadata_model(
+    PPCA,
+    human_name="probabilistic PCA model",
     input=Table(Continuous),
     output=Table(Continuous),
     weights=false,
@@ -223,7 +227,9 @@ function MMI.fit(model::FactorAnalysis, verbosity::Int, X)
     return fitresult, cache, report
 end
 
-metadata_model(FactorAnalysis,
+metadata_model(
+    FactorAnalysis,
+    human_name="factor analysis model",
     input=Table(Continuous),
     output=Table(Continuous),
     weights=false,
