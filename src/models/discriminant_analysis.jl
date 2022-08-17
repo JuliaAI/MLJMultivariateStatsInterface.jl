@@ -37,9 +37,18 @@ function MMI.fit(model::LDA, ::Int, X, y)
     return fitresult, cache, report
 end
 
+const ERR_LONE_TARGET_CLASS = ArgumentError(
+    "The number of unique classes in "*
+    "the training target has to be greater than one, even if "*
+    "the complete pool contains more than one class. If "*
+    "`cov_b=CovarianceEstimation.SimpleCovariance()` this "*
+    "restriction on classes does not apply. "
+)
+
 function _check_lda_data(model, X, y)
     class_list = MMI.classes(y[1]) # Class list containing entries in pool of y.
     nclasses = length(class_list)
+
     # Class list containing entries in seen in y.
     classes_seen = filter(in(y), class_list)
     nc = length(classes_seen) # Number of classes in pool of y.
@@ -47,25 +56,26 @@ function _check_lda_data(model, X, y)
     Xm_t = _matrix_transpose(model, X) # Now p x n matrix
     yplain = MMI.int(y) # Vector of n ints in {1,..., nclasses}.
     p, n = size(Xm_t)
+
     # Recode yplain to be in {1,..., nc}
     nc == nclasses || _replace!(yplain, integers_seen, 1:nc)
+
     # Check to make sure we have more than one class in training sample.
-    # This is to prevent Sb from being a zero matrix.
-    if nc <= 1
-        throw(
-            ArgumentError(
-                "The number of unique classes in "*
-                "traning sample has to be greater than one"
-            )
-        )
+    # This is to prevent Sb from being a zero matrix
+    # see issue #41
+    lone_class_unsupported = model isa Union{LDA, BayesianLDA} &&
+          model.cov_b != MS.SimpleCovariance()
+    if nc <= 1 && lone_class_unsupported
+        throw(ERR_LONE_TARGET_CLASS)
     end
+
     # Check to make sure we have more samples than classes.
     # This is to prevent Sw from being the zero matrix.
     if n <= nc
         throw(
             ArgumentError(
                 "The number of training samples `n` has"*
-                " to be greater than number of unique classes `nc`"
+                " to be greater than number of unique classes `nc`."
             )
         )
     end
@@ -74,11 +84,12 @@ function _check_lda_data(model, X, y)
     # If unset (0) use the default; otherwise try to use the provided one
     outdim = ifelse(model.outdim == 0, def_outdim, model.outdim)
     # Check if the given one is sensible
-    if outdim > p
+    if outdim > def_outdim
         throw(
             ArgumentError(
-                "`outdim` must not be larger than `p`"*
-                "where `p` is the number of features in `X`"
+                "`outdim` must not be larger than `min(p, nc-1)`"*
+                "where `p` is the number of features in `X` and"*
+                "`nc` is the number of unique classes in the target vector."
             )
         )
     end
@@ -157,8 +168,8 @@ function MMI.fit(model::BayesianLDA, ::Int, X, y)
         total = core_res.stats.tweight
         priors = weights ./ total
     end
-    cache     = nothing
-    report    = (
+    cache = nothing
+    report = (
         classes=classes_seen,
         outdim=MS.size(core_res)[2],
         projected_class_means=MS.classmeans(core_res),
@@ -259,6 +270,20 @@ metadata_model(
     dist::SemiMetric = SqEuclidean()
 end
 
+function subspace_outdim(core_res, outdim)
+    # `projLDA` is a `r x min(r, nc - 1)`  where `r` is the rank of the within-class
+    # scatter matrix and `nc` is the number of classes seen in the training sample.
+    projLDA = core_res.projLDA
+    return min(size(projLDA, 2), outdim) # the same as `min(r, outdim)`
+end
+
+function explained_variance(core_res)
+    # λ is a `min(r, nc -1) x 1` vector containing the eigen values sorted in descending order.
+    # where `r` is the rank of the within-class covariance matrix.
+    λ = core_res.λ
+    return λ ./ sum(λ) #proportions of variance
+end
+
 function MMI.fit(model::SubspaceLDA, ::Int, X, y)
     Xm_t, yplain, classes_seen, p, n, nc, nclasses, integers_seen, outdim =
         _check_lda_data(model, X, y)
@@ -267,19 +292,19 @@ function MMI.fit(model::SubspaceLDA, ::Int, X, y)
         MS.SubspaceLDA, Xm_t, Int.(yplain), nc;
         normalize = model.normalize
     )
-    # λ is a (nc -1) x 1 vector containing the eigen values sorted in descending order.
-    λ = core_res.λ
-    explained_variance_ratio = λ ./ sum(λ) #proportions of variance
 
+    explained_variance_ratio = explained_variance(core_res)
     cache = nothing
+
     report = (
         explained_variance_ratio=explained_variance_ratio,
         classes=classes_seen,
         projected_class_means=MS.classmeans(core_res),
         mean=MS.mean(core_res),
         class_weights=MS.classweights(core_res),
-        nclasses=nc,
+        nclasses=nc
     )
+    outdim = subspace_outdim(core_res, outdim)
     fitresult = (core_res, outdim, classes_seen)
     return fitresult, cache, report
 end
@@ -289,14 +314,16 @@ function MMI.fitted_params(::SubspaceLDA, (core_res, _))
 end
 
 function MMI.predict(m::SubspaceLDA, (core_res, outdim, classes_seen), Xnew)
-     # projection of Xnew, XWt is nt x o  where o = number of out dims
-    # nt = number ot test samples
-    proj = core_res.projw * view(core_res.projLDA, :, 1:outdim) #proj is the projection_matrix
+    # projection of `Xnew`, `XWt` is `nt x o` where `o` is the number of out dims
+    # and `nt` is the number ot test samples.
+    # `proj` is the overall projection_matrix
+    proj = core_res.projw * @view(core_res.projLDA[:, 1:outdim])
     XWt = MMI.matrix(Xnew) * proj
+
     # centroids in the transformed space, nc x o
     centroids = transpose(core_res.cmeans) * proj
 
-    # compute the distances in the transformed space between pairs of rows
+    # Compute the distances in the transformed space between pairs of rows
     # the probability matrix is `nt x nc` and normalised accross rows
     Pr = pairwise(m.dist, XWt, centroids, dims=1)
     Pr .*= -1
@@ -338,9 +365,8 @@ function MMI.fit(model::BayesianSubspaceLDA, ::Int, X, y)
         MS.SubspaceLDA, Xm_t, Int.(yplain), nc;
         normalize = model.normalize
     )
-    # λ is a (nc -1) x 1 vector containing the eigen values sorted in descending order.
-    λ = core_res.λ
-    explained_variance_ratio = λ ./ sum(λ) #proportions of variance
+
+    explained_variance_ratio = explained_variance(core_res)
     mult = model.normalize ? n : 1 #used in prediction
 
     ## Estimates prior probabilities if specified by user.
@@ -359,6 +385,7 @@ function MMI.fit(model::BayesianSubspaceLDA, ::Int, X, y)
         class_weights=MS.classweights(core_res),
         nclasses=nc
     )
+    outdim = subspace_outdim(core_res, outdim)
     fitresult = (core_res, outdim, classes_seen, priors, n, mult)
     return fitresult, cache, report
 end
@@ -380,25 +407,31 @@ function MMI.predict(
     (core_res, outdim, classes_seen, priors, n, mult),
     Xnew
 )
-    # projection of Xnew, XWt is nt x o  where o = number of out dims
-    # nt = number ot test samples
-    #proj is the projection_matrix
-    proj = core_res.projw * view(core_res.projLDA, :, 1:outdim)
+    # projection of `Xnew`, `XWt` is `nt x o` where `o` is the number of out dims
+    # and `nt` is the number ot test samples.
+    # `proj` is the overall projection_matrix
+    proj = core_res.projw * @view(core_res.projLDA[:, 1:outdim])
     XWt = MMI.matrix(Xnew) * proj
 
-    # centroids in the transformed space, nc x o
+    # centroids in the transformed space, `nc x o`
     centroids = transpose(core_res.cmeans) * proj
     nc = length(classes_seen)
 
     # compute the distances in the transformed space between pairs of rows
     # The discriminant matrix `Pr` is of dimension `nt x nc`
-    # Pr[i,k] = -0.5*(xᵢ −  µₖ)ᵀ(Σw⁻¹)(xᵢ −  µₖ) + log(priorsₖ) where Σw = Sw/(n-nc)
-    # In the transformed space this becomes
-    # Pr[i,k] = -0.5*(Pᵀxᵢ −  Pᵀµₖ)ᵀ(PᵀΣw⁻¹P)(Pᵀxᵢ −  Pᵀµₖ) + log(priorsₖ)
-    # But PᵀSw⁻¹P = (1/mult)*I and PᵀΣw⁻¹P = (n-nc)/mult*I
-    # Giving Pr[i,k] = -0.5*n*(Pᵀxᵢ −  Pᵀµₖ)ᵀ(Pᵀxᵢ −  Pᵀµₖ) + log(priorsₖ)
-    # (Pᵀxᵢ −  Pᵀµₖ)ᵀ(Pᵀxᵢ −  Pᵀµₖ) is the SquaredEquclidean distance in the
-    # transformed space
+    # Pr[i,k] = -0.5*(xᵢ −  µₖ)ᵀ(Σ⁻¹)(xᵢ −  µₖ) + log(priorsₖ)
+    # where `Σ = Sw/(n-nc)` is the within-class covariance matrix which maybe singular,
+    # Using `P` to project to the subspace spanned by the within-class covariance matrix
+    # The discriminant matrix `Pr` becomes
+    # Pr[i,k] = -0.5*n*(Pᵀxᵢ −  Pᵀµₖ)ᵀ(Σw⁻¹)(Pᵀxᵢ −  Pᵀµₖ) + log(priorsₖ)
+    # where `Σw = PᵀSwP/(n-nc)` is now non-singular,
+    # Applying the LDA projection, `L` in the subspace spanned by the within-class
+    # covariance matrix, this becomes
+    # Pr[i,k] = -0.5*(LᵀPᵀxᵢ −  LᵀPᵀµₖ)ᵀ(LᵀΣw⁻¹Lᵀ)(Lᵀxᵢ −  ᵀlµₖ) + log(priorsₖ)
+    # But LᵀΣw⁻¹L = ((n-nc)/mult)*I and `M = PL`
+    # Giving Pr[i,k] = -0.5*n*(Mᵀxᵢ −  Mᵀµₖ)ᵀ(Mᵀxᵢ −  Mᵀµₖ) + log(priorsₖ)
+    # where (Mᵀxᵢ −  Mᵀµₖ)ᵀ(Mᵀxᵢ −  Mᵀµₖ) is the SquaredEquclidean distance in the
+    # space spanned by the overall projection `PL`
     Pr = pairwise(SqEuclidean(), XWt, centroids, dims=1)
     Pr .*= (-(n-nc)/2mult)
     Pr .+= log.(transpose(priors))
@@ -409,9 +442,10 @@ function MMI.predict(
 end
 
 function MMI.transform(m::T, (core_res, outdim, _), X) where T<:Union{SubspaceLDA, BayesianSubspaceLDA}
-    # projection of X, XWt is nt x o  where o = out dims
+    # projection of `X`, `XWt` is `nt x o`  where `o` is the out dims and
+    # `nt` is the number of test cases
     proj = core_res.projw * view(core_res.projLDA, :, 1:outdim)
-    #proj is the projection_matrix
+    # `proj` is overall the projection_matrix
     XWt = MMI.matrix(X) * proj
     return MMI.table(XWt, prototype = X)
 end
