@@ -9,6 +9,7 @@ import MultivariateStats
 import MultivariateStats: SimpleCovariance
 import StatsBase: CovarianceEstimator
 
+using CategoricalDistributions
 using Distances
 using LinearAlgebra
 
