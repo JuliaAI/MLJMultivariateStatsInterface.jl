@@ -284,8 +284,8 @@ MMI.fitted_params(::ICA, fr) = (projection=copy(fr.W), mean = copy(MS.mean(fr)))
 
 $(MMI.doc_header(PCA))
 
-Principal component analysis learns a linear projection onto a lower dimensional space while
-preserving most of the initial variance seen in the training data.
+Principal component analysis learns a linear projection onto a lower dimensional space 
+while preserving most of the initial variance seen in the training data.
 
 # Training data
 
@@ -321,37 +321,38 @@ Train the machine using `fit!(mach, rows=...)`.
       dimension and otherwise use `:svd`
 
 - `mean=nothing`: if `nothing`, centering will be computed and applied, if set to `0` no
-  centering (data is assumed pre-centered); if a vector is passed, the centering is done
-  with that vector.
+    centering (data is assumed pre-centered); if a vector is passed, the centering is done
+    with that vector.
 
 # Operations
 
 - `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
-  should have the same scitype as `X` above.
+    should have the same scitype as `X` above.
 
 - `inverse_transform(mach, Xsmall)`: For a dimension-reduced table `Xsmall`,
-  such as returned by `transform`, reconstruct a table, having same the number
-  of columns as the original training data `X`, that transforms to `Xsmall`.
-  Mathematically, `inverse_transform` is a right-inverse for the PCA projection
-  map, whose image is orthogonal to the kernel of that map. In particular, if
-  `Xsmall = transform(mach, Xnew)`, then `inverse_transform(Xsmall)` is
-  only an approximation to `Xnew`.
+    such as returned by `transform`, reconstruct a table, having same the number
+    of columns as the original training data `X`, that transforms to `Xsmall`.
+    Mathematically, `inverse_transform` is a right-inverse for the PCA projection
+    map, whose image is orthogonal to the kernel of that map. In particular, if
+    `Xsmall = transform(mach, Xnew)`, then `inverse_transform(Xsmall)` is
+    only an approximation to `Xnew`.
 
 # Fitted parameters
 
 The fields of `fitted_params(mach)` are:
 
 - `projection`: Returns the projection matrix, which has size `(indim, outdim)`, where
-  `indim` and `outdim` are the number of features of the input and output respectively.
+    `indim` and `outdim` are the number of features of the input and output respectively.
 
 # Report
 
 The fields of `report(mach)` are:
 
-- `indim`: Dimension (number of columns) of the training data and new data to be transformed.
+- `indim`: Dimension (number of columns) of the training data and new data to be 
+    transformed.
 
 - `outdim = min(n, indim, maxoutdim)` is the output dimension; here `n` is the number of
-  observations.
+    observations.
 
 - `tprincipalvar`: Total variance of the principal components.
 
@@ -407,19 +408,19 @@ Train the machine using `fit!(mach, rows=...)`.
 # Hyper-parameters
 
 - `maxoutdim=0`: Controls the the dimension (number of columns) of the output,
-  `outdim`. Specifically, `outdim = min(n, indim, maxoutdim)`, where `n` is the number of
-  observations and `indim` the input dimension.
+    `outdim`. Specifically, `outdim = min(n, indim, maxoutdim)`, where `n` is the number of
+    observations and `indim` the input dimension.
 
 - `kernel::Function=(x,y)->x'y`: The kernel function, takes in 2 vector arguments
-  x and y, returns a scalar value. Defaults to the dot product of `x` and `y`.
+    x and y, returns a scalar value. Defaults to the dot product of `x` and `y`.
 
 - `solver::Symbol=:eig`: solver to use for the eigenvalues, one of `:eig`(default, uses
-  `LinearAlgebra.eigen`), `:eigs`(uses `Arpack.eigs`).
+    `LinearAlgebra.eigen`), `:eigs`(uses `Arpack.eigs`).
 
 - `inverse::Bool=true`: perform calculations needed for inverse transform
 
 - `beta::Real=1.0`: strength of the ridge regression that learns the inverse transform
-  when inverse is true.
+    when inverse is true.
 
 - `tol::Real=0.0`: Convergence tolerance for eigenvalue solver.
 
@@ -428,28 +429,29 @@ Train the machine using `fit!(mach, rows=...)`.
 # Operations
 
 - `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
-  should have the same scitype as `X` above.
+    should have the same scitype as `X` above.
 
 - `inverse_transform(mach, Xsmall)`: For a dimension-reduced table `Xsmall`, such as
-  returned by `transform`, reconstruct a table, having same the number of columns as the
-  original training data `X`, that transforms to `Xsmall`.  Mathematically,
-  `inverse_transform` is a right-inverse for the PCA projection map, whose image is
-  orthogonal to the kernel of that map. In particular, if `Xsmall = transform(mach, Xnew)`,
-  then `inverse_transform(Xsmall)` is only an approximation to `Xnew`.
+    returned by `transform`, reconstruct a table, having same the number of columns as the
+    original training data `X`, that transforms to `Xsmall`.  Mathematically,
+    `inverse_transform` is a right-inverse for the PCA projection map, whose image is
+    orthogonal to the kernel of that map. In particular, if 
+    `Xsmall = transform(mach, Xnew)`, then `inverse_transform(Xsmall)` is only an 
+    approximation to `Xnew`.
 
 # Fitted parameters
 
 The fields of `fitted_params(mach)` are:
 
 - `projection`: Returns the projection matrix, which has size `(indim, outdim)`, where
-  `indim` and `outdim` are the number of features of the input and ouput respectively.
+    `indim` and `outdim` are the number of features of the input and ouput respectively.
 
 # Report
 
 The fields of `report(mach)` are:
 
 - `indim`: Dimension (number of columns) of the training data and new data to be
-  transformed.
+    transformed.
 
 - `outdim`: Dimension of transformed data.
 
@@ -496,15 +498,17 @@ In MLJ or MLJBase, bind an instance `model` to data with
 Here:
 
 - `X` is any table of input features (eg, a `DataFrame`) whose columns are of scitype
-  `Continuous`; check column scitypes with `schema(X)`.
+    `Continuous`; check column scitypes with `schema(X)`.
 
 Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
-- `outdim::Int=0`: The number of independent components to recover, set automatically if `0`.
+- `outdim::Int=0`: The number of independent components to recover, set automatically 
+    if `0`.
 
-- `alg::Symbol=:fastica`: The algorithm to use (only `:fastica` is supported at the moment).
+- `alg::Symbol=:fastica`: The algorithm to use (only `:fastica` is supported at the 
+    moment).
 
 - `fun::Symbol=:tanh`: The approximate neg-entropy function, one of `:tanh`, `:gaus`.
 
@@ -515,18 +519,18 @@ Train the machine using `fit!(mach, rows=...)`.
 - `tol::Real=1e-6`: The convergence tolerance for change in the unmixing matrix W.
 
 - `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: mean to use, if nothing (default)
-  centering is computed and applied, if zero, no centering; otherwise a vector of means can
-  be passed.
+    centering is computed and applied, if zero, no centering; otherwise a vector of means 
+    can be passed.
 
-- `winit::Union{Nothing,Matrix{<:Real}}=nothing`: Initial guess for the unmixing matrix `W`:
-  either an empty matrix (for random initialization of `W`), a matrix of size `m × k` (if
-  `do_whiten` is true), or a matrix of size `m × k`. Here `m` is the number of components
-  (columns) of the input.
+- `winit::Union{Nothing,Matrix{<:Real}}=nothing`: Initial guess for the unmixing matrix 
+    `W`: either an empty matrix (for random initialization of `W`), a matrix of size 
+    `m × k` (if `do_whiten` is true), or a matrix of size `m × k`. Here `m` is the number 
+    of components (columns) of the input.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return the component-separated version of input
-  `Xnew`, which should have the same scitype as `X` above.
+- `transform(mach, Xnew)`: Return the component-separated version of input `Xnew`, which 
+    should have the same scitype as `X` above.
 
 # Fitted parameters
 
@@ -540,7 +544,8 @@ The fields of `fitted_params(mach)` are:
 
 The fields of `report(mach)` are:
 
-- `indim`: Dimension (number of columns) of the training data and new data to be transformed.
+- `indim`: Dimension (number of columns) of the training data and new data to be 
+    transformed.
 
 - `outdim`: Dimension of transformed data.
 
@@ -593,9 +598,9 @@ ICA
 $(MMI.doc_header(FactorAnalysis))
 
 Factor analysis is a linear-Gaussian latent variable model that is closely related to
-probabilistic PCA. In contrast to the probabilistic PCA model, the covariance of conditional
-distribution of the observed variable given the latent variable is diagonal rather than
-isotropic.
+probabilistic PCA. In contrast to the probabilistic PCA model, the covariance of 
+conditional distribution of the observed variable given the latent variable is diagonal 
+rather than isotropic.
 
 # Training data
 
@@ -606,7 +611,7 @@ In MLJ or MLJBase, bind an instance `model` to data with
 Here:
 
 - `X` is any table of input features (eg, a `DataFrame`) whose columns
-  are of scitype `Continuous`; check column scitypes with `schema(X)`.
+    are of scitype `Continuous`; check column scitypes with `schema(X)`.
 
 Train the machine using `fit!(mach, rows=...)`.
 
@@ -615,8 +620,8 @@ Train the machine using `fit!(mach, rows=...)`.
 - `method::Symbol=:cm`: Method to use to solve the problem, one of `:ml`, `:em`, `:bayes`.
 
 - `maxoutdim=0`: Controls the the dimension (number of columns) of the output,
-  `outdim`. Specifically, `outdim = min(n, indim, maxoutdim)`, where `n` is the number of
-  observations and `indim` the input dimension.
+    `outdim`. Specifically, `outdim = min(n, indim, maxoutdim)`, where `n` is the number of
+    observations and `indim` the input dimension.
 
 - `maxiter::Int=1000`: Maximum number of iterations.
 
@@ -625,35 +630,36 @@ Train the machine using `fit!(mach, rows=...)`.
 - `eta::Real=tol`: Variance lower bound.
 
 - `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: If `nothing`, centering will be
-  computed and applied; if set to `0` no centering is applied (data is assumed
-  pre-centered); if a vector, the centering is done with that vector.
+    computed and applied; if set to `0` no centering is applied (data is assumed
+    pre-centered); if a vector, the centering is done with that vector.
 
 # Operations
 
 - `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
-  should have the same scitype as `X` above.
+    should have the same scitype as `X` above.
 
 - `inverse_transform(mach, Xsmall)`: For a dimension-reduced table `Xsmall`,
-  such as returned by `transform`, reconstruct a table, having same the number
-  of columns as the original training data `X`, that transforms to `Xsmall`.
-  Mathematically, `inverse_transform` is a right-inverse for the PCA projection
-  map, whose image is orthogonal to the kernel of that map. In particular, if
-  `Xsmall = transform(mach, Xnew)`, then `inverse_transform(Xsmall)` is
-  only an approximation to `Xnew`.
+    such as returned by `transform`, reconstruct a table, having same the number
+    of columns as the original training data `X`, that transforms to `Xsmall`.
+    Mathematically, `inverse_transform` is a right-inverse for the PCA projection
+    map, whose image is orthogonal to the kernel of that map. In particular, if
+    `Xsmall = transform(mach, Xnew)`, then `inverse_transform(Xsmall)` is
+    only an approximation to `Xnew`.
 
 # Fitted parameters
 
 The fields of `fitted_params(mach)` are:
 
 - `projection`: Returns the projection matrix, which has size `(indim, outdim)`, where
-  `indim` and `outdim` are the number of features of the input and ouput respectively.
-  Each column of the projection matrix corresponds to a factor.
+    `indim` and `outdim` are the number of features of the input and ouput respectively.
+    Each column of the projection matrix corresponds to a factor.
 
 # Report
 
 The fields of `report(mach)` are:
 
-- `indim`: Dimension (number of columns) of the training data and new data to be transformed.
+- `indim`: Dimension (number of columns) of the training data and new data to be 
+    transformed.
 
 - `outdim`: Dimension of transformed data (number of factors).
 
@@ -706,59 +712,61 @@ In MLJ or MLJBase, bind an instance `model` to data with
 Here:
 
 - `X` is any table of input features (eg, a `DataFrame`) whose columns are of scitype
-  `Continuous`; check column scitypes with `schema(X)`.
+    `Continuous`; check column scitypes with `schema(X)`.
 
 Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
 - `maxoutdim=0`: Controls the the dimension (number of columns) of the output,
-  `outdim`. Specifically, `outdim = min(n, indim, maxoutdim)`, where `n` is the number of
-  observations and `indim` the input dimension.
+    `outdim`. Specifically, `outdim = min(n, indim, maxoutdim)`, where `n` is the number of
+    observations and `indim` the input dimension.
 
 - `method::Symbol=:ml`: The method to use to solve the problem, one of `:ml`, `:em`,
-  `:bayes`.
+    `:bayes`.
 
 - `maxiter::Int=1000`: The maximum number of iterations.
 
 - `tol::Real=1e-6`: The convergence tolerance.
 
 - `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: If `nothing`, centering will be
-  computed and applied; if set to `0` no centering is applied (data is assumed
-  pre-centered); if a vector, the centering is done with that vector.
+    computed and applied; if set to `0` no centering is applied (data is assumed
+    pre-centered); if a vector, the centering is done with that vector.
 
 # Operations
 
 - `transform(mach, Xnew)`: Return a lower dimensional projection of the input `Xnew`, which
-  should have the same scitype as `X` above.
+    should have the same scitype as `X` above.
 
 - `inverse_transform(mach, Xsmall)`: For a dimension-reduced table `Xsmall`,
-  such as returned by `transform`, reconstruct a table, having same the number
-  of columns as the original training data `X`, that transforms to `Xsmall`.
-  Mathematically, `inverse_transform` is a right-inverse for the PCA projection
-  map, whose image is orthogonal to the kernel of that map. In particular, if
-  `Xsmall = transform(mach, Xnew)`, then `inverse_transform(Xsmall)` is
-  only an approximation to `Xnew`.
+    such as returned by `transform`, reconstruct a table, having same the number
+    of columns as the original training data `X`, that transforms to `Xsmall`.
+    Mathematically, `inverse_transform` is a right-inverse for the PCA projection
+    map, whose image is orthogonal to the kernel of that map. In particular, if
+    `Xsmall = transform(mach, Xnew)`, then `inverse_transform(Xsmall)` is
+    only an approximation to `Xnew`.
 
 # Fitted parameters
 
 The fields of `fitted_params(mach)` are:
 
 - `projection`: Returns the projection matrix, which has size `(indim, outdim)`, where
-  `indim` and `outdim` are the number of features of the input and ouput respectively.
-  Each column of the projection matrix corresponds to a principal component.
+    `indim` and `outdim` are the number of features of the input and ouput respectively.
+    Each column of the projection matrix corresponds to a principal component.
 
 # Report
 
 The fields of `report(mach)` are:
 
-- `indim`: Dimension (number of columns) of the training data and new data to be transformed.
+- `indim`: Dimension (number of columns) of the training data and new data to be 
+    transformed.
+
 - `outdim`: Dimension of transformed data.
 
 - `tvat`: The variance of the components.
 
-- `loadings`: The models loadings, weights for each variable used when calculating principal
-  components.
+- `loadings`: The models loadings, weights for each variable used when calculating 
+    principal components.
 
 # Examples
 
