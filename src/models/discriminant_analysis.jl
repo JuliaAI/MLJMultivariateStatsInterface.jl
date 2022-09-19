@@ -12,11 +12,11 @@
 end
 
 const ERR_LONE_TARGET_CLASS = ArgumentError(
-  "The number of unique classes in "*
-  "the training target has to be greater than one, even if "*
-  "the complete pool contains more than one class. If "*
-  "`cov_b=CovarianceEstimation.SimpleCovariance()` this "*
-  "restriction on classes does not apply. "
+    "The number of unique classes in "*
+    "the training target has to be greater than one, even if "*
+    "the complete pool contains more than one class. If "*
+    "`cov_b=CovarianceEstimation.SimpleCovariance()` this "*
+    "restriction on classes does not apply. "
 )
 
 function _check_lda_data(model, X, y)
