@@ -167,7 +167,7 @@ end
   end
   priors_ = pdf.(priors, support(priors))
   _check_prob01(priors_)
-  # Select priors for unique classes in `y` (For resampling purporses).
+  # Select priors for unique classes in `y` (For resampling purposes).
   return pdf.(priors, classes_seen)
 end
 
