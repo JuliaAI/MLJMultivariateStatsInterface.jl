@@ -3,12 +3,12 @@
 ####
 
 @mlj_model mutable struct LDA <: MMI.Probabilistic
-  method::Symbol = :gevd::(_ in (:gevd, :whiten))
-  cov_w::CovarianceEstimator = MS.SimpleCovariance()
-  cov_b::CovarianceEstimator = MS.SimpleCovariance()
-  outdim::Int = 0::(_ ≥ 0)
-  regcoef::Float64 = 1e-6::(_ ≥ 0)
-  dist::SemiMetric = SqEuclidean()
+    method::Symbol = :gevd::(_ in (:gevd, :whiten))
+    cov_w::CovarianceEstimator = MS.SimpleCovariance()
+    cov_b::CovarianceEstimator = MS.SimpleCovariance()
+    outdim::Int = 0::(_ ≥ 0)
+    regcoef::Float64 = 1e-6::(_ ≥ 0)
+    dist::SemiMetric = SqEuclidean()
 end
 
 const ERR_LONE_TARGET_CLASS = ArgumentError(
