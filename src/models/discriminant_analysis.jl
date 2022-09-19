@@ -20,11 +20,11 @@ const ERR_LONE_TARGET_CLASS = ArgumentError(
 )
 
 function _check_lda_data(model, X, y)
-    pool = MMI.classes(y[1]) # Class list containing entries in pool of y.
-    classes_seen = unique(y) # Class list of actual entries in seen in y.
-    nc = length(classes_seen) # Number of classes in pool of y.
+    pool = MMI.classes(y[1]) # Class list containing entries in pool of `y`.
+    classes_seen = unique(y) # Class list of actual entries in seen in `y`.
+    nc = length(classes_seen) # Number of actual classes seen in `y`.
 
-    Xm_t = _matrix_transpose(model, X) # Now p x n matrix
+    Xm_t = _matrix_transpose(model, X) # Now `p x n` matrix
     p, n = size(Xm_t)
 
     # Check to make sure we have more than one class in training sample.
