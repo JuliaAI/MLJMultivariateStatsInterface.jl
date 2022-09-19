@@ -142,7 +142,7 @@ end
 
 function _matrix_transpose(::Union{LDA,BayesianLDA}, X)
     # MultivariateStats 9.0 is not supporting adjoints
-    return MMI.matrix(X, transpose=true)
+    return MMI.matrix(X)'
 end
 
 function _check_prob01(priors)
