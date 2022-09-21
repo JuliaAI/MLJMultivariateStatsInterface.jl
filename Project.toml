@@ -1,9 +1,10 @@
 name = "MLJMultivariateStatsInterface"
 uuid = "1b6a4a23-ba22-4f51-9698-8599985d3728"
 authors = ["Anthony D. Blaom <anthony.blaom@gmail.com>", "Thibaut Lienart <thibaut.lienart@gmail.com>", "Okon Samuel <okonsamuel50@gmail.com>"]
-version = "0.4.0"
+version = "0.5.0"
 
 [deps]
+CategoricalDistributions = "af321ab8-2d2e-40a6-b165-3d674595d28e"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MLJModelInterface = "e80e1ace-859a-464e-9ed9-23947d8ae3ea"
@@ -11,9 +12,10 @@ MultivariateStats = "6f286f6a-111f-5878-ab1e-185364afe411"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
+CategoricalDistributions = "0.1.9"
 Distances = "0.9,0.10"
 MLJModelInterface = "1.4"
-MultivariateStats = "0.9"
+MultivariateStats = "0.10"
 StatsBase = "0.32, 0.33"
 julia = "1.6"
 
