@@ -582,7 +582,7 @@ The fields of `fitted_params(mach)` are:
 
 The fields of `report(mach)` are:
 
-- `indim`: The dimension of the input space i.e the number of features of training matrix.
+- `indim`: The dimension of the input space i.e the number of training features.
 
 - `outdim`: The dimension of the transformed space the model is projected to.
 
