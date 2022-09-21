@@ -134,7 +134,7 @@ metadata_model(
     outdim::Int=0::(_ ≥ 0)
     regcoef::Float64=1e-6::(_ ≥ 0)
     priors::Union{
-        Nothing, 
+        Nothing,
         UnivariateFinite{<:Any, <:Any, <:Any, <:Real},
         Dict{<:Any, <:Real}
     }=nothing
@@ -299,7 +299,7 @@ function subspace_outdim(core_res, outdim)
 end
 
 function explained_variance(core_res)
-    # λ is a `min(r, nc -1) x 1` vector containing the eigen values sorted in descending 
+    # λ is a `min(r, nc -1) x 1` vector containing the eigen values sorted in descending
     # order, where `r` is the rank of the within-class covariance matrix.
     λ = core_res.λ
     return λ ./ sum(λ) #proportions of variance
@@ -325,14 +325,14 @@ function MMI.fit(model::SubspaceLDA, ::Int, X, y)
         class_weights=MS.classweights(core_res),
         explained_variance_ratio=explained_variance(core_res),
     )
-    
+
     fitresult = (core_res, outdim, classes_seen, pool)
     return fitresult, cache, report
 end
 
 function MMI.fitted_params(::SubspaceLDA, (core_res, outdim, classes_seen, _))
     return (
-        classes=classes_seen, 
+        classes=classes_seen,
         projection_matrix=core_res.projw * view(core_res.projLDA, :, 1:outdim)
     )
 end
@@ -374,7 +374,7 @@ metadata_model(
     normalize::Bool=false
     outdim::Int= 0::(_ ≥ 0)
     priors::Union{
-        Nothing, 
+        Nothing,
         UnivariateFinite{<:Any, <:Any, <:Any, <:Real},
         Dict{<:Any, <:Real}
     }=nothing
@@ -415,7 +415,7 @@ function MMI.fit(model::BayesianSubspaceLDA, ::Int, X, y)
         class_weights=MS.classweights(core_res),
         explained_variance_ratio=explained_variance(core_res),
     )
-    
+
     fitresult = (core_res, outdim, classes_seen, pool, priors, n, mult)
     return fitresult, cache, report
 end
@@ -501,19 +501,19 @@ metadata_model(
 $(MMI.doc_header(LDA))
 
 [Multiclass linear discriminant
-analysis](https://en.wikipedia.org/wiki/Linear_discriminant_analysis) learns a projection 
-in a space of features to a lower dimensional space, in a way that attempts to preserve 
+analysis](https://en.wikipedia.org/wiki/Linear_discriminant_analysis) learns a projection
+in a space of features to a lower dimensional space, in a way that attempts to preserve
 as much as possible the degree to which the classes of a discrete target variable can be
 discriminated. This can be used either for dimension reduction of the features (see
-`transform` below) or for probabilistic classification of the target 
+`transform` below) or for probabilistic classification of the target
 (see `predict` below).
 
 In the case of prediction, the class probability for a new observation reflects the
 proximity of that observation to training observations associated with that class, and how
 far away the observation is from observations associated with other classes. Specifically,
-the distances, in the transformed (projected) space, of a new observation, from the 
-centroid of each target class, is computed; the resulting vector of distances, multiplied 
-by minus one, is passed to a softmax function to obtain a class probability prediction. 
+the distances, in the transformed (projected) space, of a new observation, from the
+centroid of each target class, is computed; the resulting vector of distances, multiplied
+by minus one, is passed to a softmax function to obtain a class probability prediction.
 Here "distance" is computed using a user-specified distance function.
 
 # Training data
@@ -524,10 +524,10 @@ In MLJ or MLJBase, bind an instance `model` to data with
 
 Here:
 
-- `X` is any table of input features (eg, a `DataFrame`) whose columns are of scitype 
+- `X` is any table of input features (eg, a `DataFrame`) whose columns are of scitype
   `Continuous`; check column scitypes with `schema(X)`.
 
-- `y` is the target, which can be any `AbstractVector` whose element scitype is 
+- `y` is the target, which can be any `AbstractVector` whose element scitype is
   `OrderedFactor` or `Multiclass`; check the scitype with `scitype(y)`
 
 Train the machine using `fit!(mach, rows=...)`.
@@ -537,7 +537,7 @@ Train the machine using `fit!(mach, rows=...)`.
 - `method::Symbol=:gevd`: The solver, one of `:gevd` or `:whiten` methods.
 
 - `cov_w::StatsBase.SimpleCovariance()`: An estimator for the within-class
-  covariance (used in computing the within-class scatter matrix, `Sw`). Any robust 
+  covariance (used in computing the within-class scatter matrix, `Sw`). Any robust
   estimator from `CovarianceEstimation.jl` can be used.
 
 - `cov_b::StatsBase.SimpleCovariance()`: The same as `cov_w` but for the
@@ -548,12 +548,12 @@ Train the machine using `fit!(mach, rows=...)`.
 
 - `regcoef::Float64=1e-6`: The regularization coefficient. A positive value
   `regcoef*eigmax(Sw)` where `Sw` is the within-class scatter matrix, is added to the
-  diagonal of `Sw` to improve numerical stability. This can be useful if using the 
+  diagonal of `Sw` to improve numerical stability. This can be useful if using the
   standard covariance estimator.
 
 - `dist=Distances.SqEuclidean()`: The distance metric to use when performing classification
-  (to compare the distance between a new point and centroids in the transformed space); 
-  must be a subtype of `Distances.SemiMetric` from Distances.jl, e.g., 
+  (to compare the distance between a new point and centroids in the transformed space);
+  must be a subtype of `Distances.SemiMetric` from Distances.jl, e.g.,
   `Distances.CosineDist`.
 
 # Operations
@@ -575,7 +575,7 @@ The fields of `fitted_params(mach)` are:
 - `classes`: The classes seen during model fitting.
 
 - `projection_matrix`: The learned projection matrix, of size `(indim, outdim)`, where
-  `indim` and `outdim` are the input and output dimensions respectively (See Report 
+  `indim` and `outdim` are the input and output dimensions respectively (See Report
   section below).
 
 # Report
@@ -591,12 +591,12 @@ The fields of `report(mach)` are:
 - `nclasses`: The number of classes directly observed in the training data (which can be
   less than the total number of classes in the class pool).
 
-- `class_means`: The class-specific means of the training data. A matrix of size 
-  `(indim, nclasses)` with the ith column being the class-mean of the ith class in 
+- `class_means`: The class-specific means of the training data. A matrix of size
+  `(indim, nclasses)` with the ith column being the class-mean of the ith class in
   `classes` (See fitted params section above).
 
-- `class_weights`: The weights (class counts) of each class. A vector of length 
-  `nclasses` with the ith element being the class weight of the ith class in 
+- `class_weights`: The weights (class counts) of each class. A vector of length
+  `nclasses` with the ith element being the class weight of the ith class in
   `classes`. (See fitted params section above.)
 
 - `Sb`: The between class scatter matrix.
@@ -663,7 +663,7 @@ Train the machine using `fit!(mach, rows=...)`.
 - `method::Symbol=:gevd`: choice of solver, one of `:gevd` or `:whiten` methods.
 
 - `cov_w::StatsBase.SimpleCovariance()`: An estimator for the within-class
-  covariance (used in computing the within-class scatter matrix, `Sw`). Any robust 
+  covariance (used in computing the within-class scatter matrix, `Sw`). Any robust
   estimator from `CovarianceEstimation.jl` can be used.
 
 - `cov_b::StatsBase.SimpleCovariance()`: The same as `cov_w` but for the
@@ -674,13 +674,13 @@ Train the machine using `fit!(mach, rows=...)`.
 
 - `regcoef::Float64=1e-6`: The regularization coefficient. A positive value
   `regcoef*eigmax(Sw)` where `Sw` is the within-class scatter matrix, is added to the
-  diagonal of `Sw` to improve numerical stability. This can be useful if using the 
+  diagonal of `Sw` to improve numerical stability. This can be useful if using the
   standard covariance estimator.
 
-- `priors::Union{Nothing, UnivariateFinite{<:Any, <:Any, <:Any, <:Real}, 
-  Dict{<:Any, <:Real}} = nothing`: For use in prediction with Bayes rule. If 
-  `priors = nothing` then `priors` are estimated from the class proportions in the 
-  training data. Otherwise it requires a `Dict` or `UnivariateFinite` object specifying 
+- `priors::Union{Nothing, UnivariateFinite{<:Any, <:Any, <:Any, <:Real},
+  Dict{<:Any, <:Real}} = nothing`: For use in prediction with Bayes rule. If
+  `priors = nothing` then `priors` are estimated from the class proportions in the
+  training data. Otherwise it requires a `Dict` or `UnivariateFinite` object specifying
   the classes with non-zero probabilities in the training target.
 
 # Operations
@@ -689,7 +689,7 @@ Train the machine using `fit!(mach, rows=...)`.
   should have the same scitype as `X` above.
 
 - `predict(mach, Xnew)`: Return predictions of the target given features `Xnew`, which
-  should have the same scitype as `X` above. Predictions are probabilistic but 
+  should have the same scitype as `X` above. Predictions are probabilistic but
   uncalibrated.
 
 - `predict_mode(mach, Xnew)`: Return the modes of the probabilistic predictions returned
@@ -703,7 +703,7 @@ The fields of `fitted_params(mach)` are:
 - `classes`: The classes seen during model fitting.
 
 - `projection_matrix`: The learned projection matrix, of size `(indim, outdim)`, where
-  `indim` and `outdim` are the input and output dimensions respectively (See Report 
+  `indim` and `outdim` are the input and output dimensions respectively (See Report
   section below).
 
 - `priors`: The class priors for classification. As inferred from training target `y`, if
@@ -713,7 +713,7 @@ The fields of `fitted_params(mach)` are:
 
 The fields of `report(mach)` are:
 
-- `indim`: The dimension of the input space i.e the number of features of training matrix.
+- `indim`: The dimension of the input space i.e the number of training features.
 
 - `outdim`: The dimension of the transformed space the model is projected to.
 
@@ -722,12 +722,12 @@ The fields of `report(mach)` are:
 - `nclasses`: The number of classes directly observed in the training data (which can be
   less than the total number of classes in the class pool).
 
-- `class_means`: The class-specific means of the training data. A matrix of size 
-  `(indim, nclasses)` with the ith column being the class-mean of the ith class in 
+- `class_means`: The class-specific means of the training data. A matrix of size
+  `(indim, nclasses)` with the ith column being the class-mean of the ith class in
   `classes` (See fitted params section above).
 
-- `class_weights`: The weights (class counts) of each class. A vector of length 
-  `nclasses` with the ith element being the class weight of the ith class in 
+- `class_weights`: The weights (class counts) of each class. A vector of length
+  `nclasses` with the ith element being the class weight of the ith class in
   `classes`. (See fitted params section above.)
 
 - `Sb`: The between class scatter matrix.
@@ -761,14 +761,14 @@ BayesianLDA
 $(MMI.doc_header(SubspaceLDA))
 
 Multiclass subspace linear discriminant analysis (LDA) is a variation on ordinary
-[`LDA`](@ref) suitable for high dimensional data, as it avoids storing scatter matrices. 
+[`LDA`](@ref) suitable for high dimensional data, as it avoids storing scatter matrices.
 For details, refer the [MultivariateStats.jl
 documentation](https://juliastats.org/MultivariateStats.jl/stable/).
 
 In addition to dimension reduction (using `transform`) probabilistic classification is
 provided (using `predict`).  In the case of classification, the class probability for a new
 observation reflects the proximity of that observation to training observations associated
-with that class, and how far away the observation is from observations associated with 
+with that class, and how far away the observation is from observations associated with
 other classes. Specifically, the distances, in the transformed (projected) space, of a new
 observation, from the centroid of each target class, is computed; the resulting vector of
 distances, multiplied by minus one, is passed to a softmax function to obtain a class
@@ -783,26 +783,26 @@ In MLJ or MLJBase, bind an instance `model` to data with
 
 Here:
 
-- `X` is any table of input features (eg, a `DataFrame`) whose columns are of scitype 
+- `X` is any table of input features (eg, a `DataFrame`) whose columns are of scitype
   `Continuous`; check column scitypes with `schema(X)`.
 
-- `y` is the target, which can be any `AbstractVector` whose element scitype is 
+- `y` is the target, which can be any `AbstractVector` whose element scitype is
   `OrderedFactor` or `Multiclass`; check the scitype with `scitype(y)`.
 
 Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
-- `normalize=true`: Option to normalize the between class variance for the number of 
+- `normalize=true`: Option to normalize the between class variance for the number of
   observations in each class, one of `true` or `false`.
 
-- `outdim`: the ouput dimension, automatically set to `min(indim, nclasses-1)` if equal 
-  to `0`. If a non-zero `outdim` is passed, then the actual output dimension used is 
+- `outdim`: the ouput dimension, automatically set to `min(indim, nclasses-1)` if equal
+  to `0`. If a non-zero `outdim` is passed, then the actual output dimension used is
   `min(rank, outdim)` where `rank` is the rank of the within-class covariance matrix.
 
 - `dist=Distances.SqEuclidean()`: The distance metric to use when performing classification
-  (to compare the distance between a new point and centroids in the transformed space); 
-  must be a subtype of `Distances.SemiMetric` from Distances.jl, e.g., 
+  (to compare the distance between a new point and centroids in the transformed space);
+  must be a subtype of `Distances.SemiMetric` from Distances.jl, e.g.,
   `Distances.CosineDist`.
 
 
@@ -825,14 +825,14 @@ The fields of `fitted_params(mach)` are:
 - `classes`: The classes seen during model fitting.
 
 - `projection_matrix`: The learned projection matrix, of size `(indim, outdim)`, where
-  `indim` and `outdim` are the input and output dimensions respectively (See Report 
+  `indim` and `outdim` are the input and output dimensions respectively (See Report
   section below).
 
 # Report
 
 The fields of `report(mach)` are:
 
-- `indim`: The dimension of the input space i.e the number of features of training matrix.
+- `indim`: The dimension of the input space i.e the number of training features.
 
 - `outdim`: The dimension of the transformed space the model is projected to.
 
@@ -841,15 +841,15 @@ The fields of `report(mach)` are:
 - `nclasses`: The number of classes directly observed in the training data (which can be
   less than the total number of classes in the class pool)
 
-`class_means`: The class-specific means of the training data. A matrix of size 
-  `(indim, nclasses)` with the ith column being the class-mean of the ith class in 
+`class_means`: The class-specific means of the training data. A matrix of size
+  `(indim, nclasses)` with the ith column being the class-mean of the ith class in
   `classes` (See fitted params section above).
 
-- `class_weights`: The weights (class counts) of each class. A vector of length 
-  `nclasses` with the ith element being the class weight of the ith class in 
+- `class_weights`: The weights (class counts) of each class. A vector of length
+  `nclasses` with the ith element being the class weight of the ith class in
   `classes`. (See fitted params section above.)
 
-- `explained_variance_ratio`: The ratio of explained variance to total variance. Each 
+- `explained_variance_ratio`: The ratio of explained variance to total variance. Each
   dimension corresponds to an eigenvalue.
 
 # Examples
@@ -903,14 +903,14 @@ Train the machine using `fit!(mach, rows=...)`.
 - `normalize=true`: Option to normalize the between class variance for the number of
   observations in each class, one of `true` or `false`.
 
-`outdim`: the ouput dimension, automatically set to `min(indim, nclasses-1)` if equal 
-  to `0`. If a non-zero `outdim` is passed, then the actual output dimension used is 
+`outdim`: the ouput dimension, automatically set to `min(indim, nclasses-1)` if equal
+  to `0`. If a non-zero `outdim` is passed, then the actual output dimension used is
   `min(rank, outdim)` where `rank` is the rank of the within-class covariance matrix.
 
-- `priors::Union{Nothing, UnivariateFinite{<:Any, <:Any, <:Any, <:Real}, 
-  Dict{<:Any, <:Real}} = nothing`: For use in prediction with Bayes rule. If 
-  `priors = nothing` then `priors` are estimated from the class proportions in the 
-  training data. Otherwise it requires a `Dict` or `UnivariateFinite` object specifying 
+- `priors::Union{Nothing, UnivariateFinite{<:Any, <:Any, <:Any, <:Real},
+  Dict{<:Any, <:Real}} = nothing`: For use in prediction with Bayes rule. If
+  `priors = nothing` then `priors` are estimated from the class proportions in the
+  training data. Otherwise it requires a `Dict` or `UnivariateFinite` object specifying
   the classes with non-zero probabilities in the training target.
 
 
@@ -933,7 +933,7 @@ The fields of `fitted_params(mach)` are:
 - `classes`: The classes seen during model fitting.
 
 - `projection_matrix`: The learned projection matrix, of size `(indim, outdim)`, where
-  `indim` and `outdim` are the input and output dimensions respectively (See Report 
+  `indim` and `outdim` are the input and output dimensions respectively (See Report
   section below).
 
 - `priors`: The class priors for classification. As inferred from training target `y`, if
@@ -943,7 +943,7 @@ The fields of `fitted_params(mach)` are:
 
 The fields of `report(mach)` are:
 
-- `indim`: The dimension of the input space i.e the number of features of training matrix.
+- `indim`: The dimension of the input space i.e the number of training features.
 
 - `outdim`: The dimension of the transformed space the model is projected to.
 
@@ -952,15 +952,15 @@ The fields of `report(mach)` are:
 - `nclasses`: The number of classes directly observed in the training data (which can be
   less than the total number of classes in the class pool).
 
-`class_means`: The class-specific means of the training data. A matrix of size 
-  `(indim, nclasses)` with the ith column being the class-mean of the ith class in 
+`class_means`: The class-specific means of the training data. A matrix of size
+  `(indim, nclasses)` with the ith column being the class-mean of the ith class in
   `classes` (See fitted params section above).
 
-- `class_weights`: The weights (class counts) of each class. A vector of length `nclasses` 
-  with the ith element being the class weight of the ith class in `classes`. (See 
+- `class_weights`: The weights (class counts) of each class. A vector of length `nclasses`
+  with the ith element being the class weight of the ith class in `classes`. (See
   fitted params section above.)
 
-- `explained_variance_ratio`: The ratio of explained variance to total variance. Each 
+- `explained_variance_ratio`: The ratio of explained variance to total variance. Each
   dimension corresponds to an eigenvalue.
 
 # Examples
