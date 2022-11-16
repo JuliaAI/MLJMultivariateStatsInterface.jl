@@ -19,12 +19,11 @@ function test_regression(model, X, y)
     return yhat, fr
 end
 
-function test_composition_model(ms_model, mlj_model, X, X_array ; test_inverse=true)
-    mlj_model_type = typeof(mlj_model)
+function test_decomposition_model(ms_model, mlj_model, X, X_array ; test_inverse=true)
     Xtr_ms = permutedims(
         MultivariateStats.predict(ms_model, permutedims(X_array))
     )
-    fitresult, _, _ = fit(mlj_model, 1, X)
+    fitresult, cache, report = fit(mlj_model, 1, X)
     Xtr_mlj_table = transform(mlj_model, fitresult, X)
     Xtr_mlj = matrix(Xtr_mlj_table)
     # Compare MLJ and MultivariateStats transformed matrices
@@ -43,4 +42,7 @@ function test_composition_model(ms_model, mlj_model, X, X_array ; test_inverse=t
     # smoke test for issue #42
     fp = MLJBase.fitted_params(mlj_model, fitresult)
     :projection in keys(fp)
+    
+    return fitresult, cache, report
 end
+
