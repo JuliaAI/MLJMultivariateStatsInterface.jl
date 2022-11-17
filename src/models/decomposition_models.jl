@@ -32,7 +32,10 @@ function MMI.fit(model::PCA, verbosity::Int, X)
         tresidualvar=MS.tresidualvar(fitresult),
         tvar=MS.var(fitresult),
         mean=copy(MS.mean(fitresult)),
-        principalvars=copy(MS.principalvars(fitresult))
+        principalvars=copy(MS.principalvars(fitresult)),
+        # no need to copy here as a new copy is created 
+        # for each function call
+        loadings = MS.loadings(fitresult) 
     )
     return fitresult, cache, report
 end
@@ -175,7 +178,7 @@ function MMI.fit(model::PPCA, verbosity::Int, X)
         outdim=size(fitresult)[2],
         tvar=MS.var(fitresult),
         mean=copy(MS.mean(fitresult)),
-        loadings=MS.loadings(fitresult)
+        loadings = copy(MS.loadings(fitresult))
     )
     return fitresult, cache, report
 end
@@ -362,7 +365,12 @@ The fields of `report(mach)` are:
 
 - `mean`: The mean of the untransformed training data, of length `indim`.
 
-- `principalvars`: The variance of the principal components.
+- `principalvars`: The variance of the principal components. An AbstractVector of 
+  length `outdim`
+
+- `loadings`: The models loadings, weights for each variable used when calculating 
+  principal components. A matrix of size (`indim`, `outdim`) where `indim` and 
+  `outdim` are as defined above.
 
 # Examples
 
@@ -669,7 +677,8 @@ The fields of `report(mach)` are:
 
 - `mean`: The mean of the untransformed training data, of length `indim`.
 
-- `loadings`: The factor loadings.
+- `loadings`: The factor loadings. A matrix of size (`indim`, `outdim`) where 
+  `indim` and `outdim` are as defined above.
 
 # Examples
 
@@ -765,8 +774,8 @@ The fields of `report(mach)` are:
 
 - `tvat`: The variance of the components.
 
-- `loadings`: The models loadings, weights for each variable used when calculating 
-  principal components.
+- `loadings`: The model's loadings matrix. A matrix of size (`indim`, `outdim`) where 
+  `indim` and `outdim` as as defined above.
 
 # Examples
 
