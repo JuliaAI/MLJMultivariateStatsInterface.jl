@@ -33,9 +33,9 @@ function MMI.fit(model::PCA, verbosity::Int, X)
         tvar=MS.var(fitresult),
         mean=copy(MS.mean(fitresult)),
         principalvars=copy(MS.principalvars(fitresult)),
-        # no need to copy here as a new copy is created 
+        # no need to copy here as a new copy is created
         # for each function call
-        loadings = MS.loadings(fitresult) 
+        loadings = MS.loadings(fitresult)
     )
     return fitresult, cache, report
 end
@@ -281,13 +281,32 @@ end
 MMI.fitted_params(::ICA, fr) = (projection=copy(fr.W), mean = copy(MS.mean(fr)))
 
 
+# # PACKAGE METADATA
+
+metadata_pkg.(
+    [
+        PCA,
+        KernelPCA,
+        ICA,
+        PPCA,
+        FactorAnalysis,
+    ],
+    name = "MultivariateStats",
+    uuid = "6f286f6a-111f-5878-ab1e-185364afe411",
+    url = "https://github.com/JuliaStats/MultivariateStats.jl",
+    license = "MIT",
+    julia = true,
+    is_wrapper = false
+)
+
+
 # # DOCUMENT STRINGS
 
 """
 
 $(MMI.doc_header(PCA))
 
-Principal component analysis learns a linear projection onto a lower dimensional space 
+Principal component analysis learns a linear projection onto a lower dimensional space
 while preserving most of the initial variance seen in the training data.
 
 # Training data
@@ -351,7 +370,7 @@ The fields of `fitted_params(mach)` are:
 
 The fields of `report(mach)` are:
 
-- `indim`: Dimension (number of columns) of the training data and new data to be 
+- `indim`: Dimension (number of columns) of the training data and new data to be
   transformed.
 
 - `outdim = min(n, indim, maxoutdim)` is the output dimension; here `n` is the number of
@@ -365,11 +384,11 @@ The fields of `report(mach)` are:
 
 - `mean`: The mean of the untransformed training data, of length `indim`.
 
-- `principalvars`: The variance of the principal components. An AbstractVector of 
+- `principalvars`: The variance of the principal components. An AbstractVector of
   length `outdim`
 
-- `loadings`: The models loadings, weights for each variable used when calculating 
-  principal components. A matrix of size (`indim`, `outdim`) where `indim` and 
+- `loadings`: The models loadings, weights for each variable used when calculating
+  principal components. A matrix of size (`indim`, `outdim`) where `indim` and
   `outdim` are as defined above.
 
 # Examples
@@ -443,8 +462,8 @@ Train the machine using `fit!(mach, rows=...)`.
   returned by `transform`, reconstruct a table, having same the number of columns as the
   original training data `X`, that transforms to `Xsmall`.  Mathematically,
   `inverse_transform` is a right-inverse for the PCA projection map, whose image is
-  orthogonal to the kernel of that map. In particular, if 
-  `Xsmall = transform(mach, Xnew)`, then `inverse_transform(Xsmall)` is only an 
+  orthogonal to the kernel of that map. In particular, if
+  `Xsmall = transform(mach, Xnew)`, then `inverse_transform(Xsmall)` is only an
   approximation to `Xnew`.
 
 # Fitted parameters
@@ -512,10 +531,10 @@ Train the machine using `fit!(mach, rows=...)`.
 
 # Hyper-parameters
 
-- `outdim::Int=0`: The number of independent components to recover, set automatically 
+- `outdim::Int=0`: The number of independent components to recover, set automatically
   if `0`.
 
-- `alg::Symbol=:fastica`: The algorithm to use (only `:fastica` is supported at the 
+- `alg::Symbol=:fastica`: The algorithm to use (only `:fastica` is supported at the
   moment).
 
 - `fun::Symbol=:tanh`: The approximate neg-entropy function, one of `:tanh`, `:gaus`.
@@ -527,17 +546,17 @@ Train the machine using `fit!(mach, rows=...)`.
 - `tol::Real=1e-6`: The convergence tolerance for change in the unmixing matrix W.
 
 - `mean::Union{Nothing, Real, Vector{Float64}}=nothing`: mean to use, if nothing (default)
-  centering is computed and applied, if zero, no centering; otherwise a vector of means 
+  centering is computed and applied, if zero, no centering; otherwise a vector of means
   can be passed.
 
-- `winit::Union{Nothing,Matrix{<:Real}}=nothing`: Initial guess for the unmixing matrix 
-  `W`: either an empty matrix (for random initialization of `W`), a matrix of size 
-  `m × k` (if `do_whiten` is true), or a matrix of size `m × k`. Here `m` is the number 
+- `winit::Union{Nothing,Matrix{<:Real}}=nothing`: Initial guess for the unmixing matrix
+  `W`: either an empty matrix (for random initialization of `W`), a matrix of size
+  `m × k` (if `do_whiten` is true), or a matrix of size `m × k`. Here `m` is the number
   of components (columns) of the input.
 
 # Operations
 
-- `transform(mach, Xnew)`: Return the component-separated version of input `Xnew`, which 
+- `transform(mach, Xnew)`: Return the component-separated version of input `Xnew`, which
   should have the same scitype as `X` above.
 
 # Fitted parameters
@@ -552,7 +571,7 @@ The fields of `fitted_params(mach)` are:
 
 The fields of `report(mach)` are:
 
-- `indim`: Dimension (number of columns) of the training data and new data to be 
+- `indim`: Dimension (number of columns) of the training data and new data to be
   transformed.
 
 - `outdim`: Dimension of transformed data.
@@ -606,8 +625,8 @@ ICA
 $(MMI.doc_header(FactorAnalysis))
 
 Factor analysis is a linear-Gaussian latent variable model that is closely related to
-probabilistic PCA. In contrast to the probabilistic PCA model, the covariance of 
-conditional distribution of the observed variable given the latent variable is diagonal 
+probabilistic PCA. In contrast to the probabilistic PCA model, the covariance of
+conditional distribution of the observed variable given the latent variable is diagonal
 rather than isotropic.
 
 # Training data
@@ -666,7 +685,7 @@ The fields of `fitted_params(mach)` are:
 
 The fields of `report(mach)` are:
 
-- `indim`: Dimension (number of columns) of the training data and new data to be 
+- `indim`: Dimension (number of columns) of the training data and new data to be
   transformed.
 
 - `outdim`: Dimension of transformed data (number of factors).
@@ -677,7 +696,7 @@ The fields of `report(mach)` are:
 
 - `mean`: The mean of the untransformed training data, of length `indim`.
 
-- `loadings`: The factor loadings. A matrix of size (`indim`, `outdim`) where 
+- `loadings`: The factor loadings. A matrix of size (`indim`, `outdim`) where
   `indim` and `outdim` are as defined above.
 
 # Examples
@@ -752,7 +771,7 @@ Train the machine using `fit!(mach, rows=...)`.
   of columns as the original training data `X`, that transforms to `Xsmall`.
   Mathematically, `inverse_transform` is a right-inverse for the PCA projection
   map, whose image is orthogonal to the kernel of that map. In particular, if
-  `Xsmall = transform(mach, Xnew)`, then `inverse_transform(Xsmall)` is only an 
+  `Xsmall = transform(mach, Xnew)`, then `inverse_transform(Xsmall)` is only an
   approximation to `Xnew`.
 
 # Fitted parameters
@@ -767,14 +786,14 @@ The fields of `fitted_params(mach)` are:
 
 The fields of `report(mach)` are:
 
-- `indim`: Dimension (number of columns) of the training data and new data to be 
+- `indim`: Dimension (number of columns) of the training data and new data to be
   transformed.
 
 - `outdim`: Dimension of transformed data.
 
 - `tvat`: The variance of the components.
 
-- `loadings`: The model's loadings matrix. A matrix of size (`indim`, `outdim`) where 
+- `loadings`: The model's loadings matrix. A matrix of size (`indim`, `outdim`) where
   `indim` and `outdim` as as defined above.
 
 # Examples
