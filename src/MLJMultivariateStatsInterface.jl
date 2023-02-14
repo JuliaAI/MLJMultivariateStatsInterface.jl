@@ -43,34 +43,4 @@ include("models/discriminant_analysis.jl")
 include("models/linear_models.jl")
 include("utils.jl")
 
-# ===================================================================
-# List of all models interfaced
-const MODELS = (
-    LinearRegressor,
-    MultitargetLinearRegressor,
-    RidgeRegressor,
-    MultitargetRidgeRegressor,
-    PCA,
-    KernelPCA,
-    ICA,
-    LDA,
-    BayesianLDA,
-    SubspaceLDA,
-    BayesianSubspaceLDA,
-    FactorAnalysis,
-    PPCA
-)
-
-# ====================================================================
-# PKG_METADATA
-metadata_pkg.(
-    MODELS,
-    name = "MultivariateStats",
-    uuid = "6f286f6a-111f-5878-ab1e-185364afe411",
-    url = "https://github.com/JuliaStats/MultivariateStats.jl",
-    license = "MIT",
-    julia = true,
-    is_wrapper = false
-)
-
 end

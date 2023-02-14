@@ -177,6 +177,22 @@ metadata_model(
     path="$(PKG).MultitargetRidgeRegressor"
 )
 
+metadata_pkg.(
+    [
+        LinearRegressor,
+        MultitargetLinearRegressor,
+        RidgeRegressor,
+        MultitargetRidgeRegressor,
+    ],
+    name = "MultivariateStats",
+    uuid = "6f286f6a-111f-5878-ab1e-185364afe411",
+    url = "https://github.com/JuliaStats/MultivariateStats.jl",
+    license = "MIT",
+    julia = true,
+    is_wrapper = false
+)
+
+
 # # DOCUMENT STRINGS
 
 """
