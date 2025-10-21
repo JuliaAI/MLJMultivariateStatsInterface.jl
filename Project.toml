@@ -12,7 +12,7 @@ MultivariateStats = "6f286f6a-111f-5878-ab1e-185364afe411"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
-CategoricalDistributions = "0.1.9"
+CategoricalDistributions = "0.1.9, 0.2"
 Distances = "0.9,0.10"
 MLJModelInterface = "1.4"
 MultivariateStats = "0.10"
