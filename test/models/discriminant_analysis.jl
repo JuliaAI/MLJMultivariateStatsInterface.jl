@@ -73,15 +73,15 @@ end
     ytest = selectrows(y, test)
 
     BLDA_model = BayesianLDA(regcoef=0)
-    
+
     ## Check model `fit`
     fitresult, cache, report = fit(BLDA_model, 1, Xtrain, ytrain)
     classes_seen, projection_matrix, priors = fitted_params(BLDA_model, fitresult)
-    @test classes(priors) == classes(y)
+    @test levels(priors) == levels(y)
     @test pdf.(priors, support(priors)) == [491/998, 507/998]
     @test classes_seen == ["Up", "Down"]
     @test round.((report.class_means)', sigdigits = 3) == [-0.0395 -0.0313; 0.0428 0.0339] #[0.0428 0.0339; -0.0395 -0.0313]
-    
+
     ## Check model `predict`
     preds = predict(BLDA_model, fitresult, Xtest)
     mce = cross_entropy(preds, ytest) |> mean
@@ -94,7 +94,7 @@ end
     fitresult1, cache1, report1 = fit(BLDA_model1, 1, Xtrain, ytrain)
     classes_seen1, projection_matrix1, priors1 = fitted_params(BLDA_model1, fitresult1)
     BLDA_model2 = BayesianLDA(
-        regcoef=0, priors=UnivariateFinite(classes(ytrain), [491/998, 507/998])
+        regcoef=0, priors=UnivariateFinite(levels(ytrain), [491/998, 507/998])
     )
     fitresult2, cache2, report2 = fit(BLDA_model2, 1, Xtrain, ytrain)
     classes_seen2, projection_matrix2, priors2 = fitted_params(BLDA_model2, fitresult2)
@@ -156,7 +156,7 @@ end
         LDA_model1, fitresult1
     )
     LDA_model2 = BayesianSubspaceLDA(
-        priors=UnivariateFinite(classes(y), [1/3, 1/3, 1/3])
+        priors=UnivariateFinite(levels(y), [1/3, 1/3, 1/3])
     )
     fitresult2, cache2, report2 = fit(LDA_model2, 1, X, y)
     classes_seen2, projection_matrix2, priors2 = fitted_params(
@@ -231,24 +231,24 @@ end
     y2 = y[[1,2,1,2]]
     @test_throws ArgumentError fit(model, 1, X, y2)
 
-    ## Check to make sure error is thrown if UnivariateFinite `priors` doesn't have 
+    ## Check to make sure error is thrown if UnivariateFinite `priors` doesn't have
     ## common pool with target vector used in training.
     model = BayesianLDA(priors=UnivariateFinite([0.1, 0.5, 0.4], pool=missing))
     @test_throws ArgumentError fit(model, 1, X, y)
 
-    ## Check to make sure error is thrown if keys used in `priors` dictionary are in pool 
+    ## Check to make sure error is thrown if keys used in `priors` dictionary are in pool
     ## of training target used in training.
     model = BayesianLDA(priors=Dict("apples" => 0.1, "oranges"=>0.5, "bannana"=>0.4))
     @test_throws ArgumentError fit(model, 1, X, y)
 
     ## Check to make sure error is thrown if sum(`priors`) isn't approximately equal to 1.
-    model = BayesianLDA(priors=UnivariateFinite(classes(y), [0.1, 0.5, 0.4, 0.2]))
+    model = BayesianLDA(priors=UnivariateFinite(levels(y), [0.1, 0.5, 0.4, 0.2]))
     @test_throws ArgumentError fit(model, 1, X, y)
 
     ## Check to make sure error is thrown if `priors .< 0` or `priors .> 1`.
-    model = BayesianLDA(priors=Dict(classes(y) .=> [-0.1, 0.0, 1.0, 0.1]))
+    model = BayesianLDA(priors=Dict(levels(y) .=> [-0.1, 0.0, 1.0, 0.1]))
     @test_throws ArgumentError fit(model, 1, X, y)
-    model = BayesianLDA(priors=Dict(classes(y) .=> [1.1, 0.0, 0.0, -0.1]))
+    model = BayesianLDA(priors=Dict(levels(y) .=> [1.1, 0.0, 0.0, -0.1]))
     @test_throws ArgumentError fit(model, 1, X, y)
 
     X2 = (x=rand(5),)
