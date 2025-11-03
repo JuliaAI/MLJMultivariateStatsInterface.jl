@@ -20,7 +20,8 @@ const ERR_LONE_TARGET_CLASS = ArgumentError(
 )
 
 function _check_lda_data(model, X, y)
-    pool = MMI.classes(y[1]) # Class list containing entries in pool of `y`.
+    pool = CategoricalDistributions.levels(y[1]) # Class list containing entries in pool
+                                                  # of `y`.
     classes_seen = unique(y) # Class list of actual entries in seen in `y`.
     nc = length(classes_seen) # Number of actual classes seen in `y`.
 
@@ -109,7 +110,7 @@ function MMI.predict(m::LDA, (core_res, classes_seen, pool), Xnew)
     Pr .*= -1
     # apply a softmax transformation
     softmax!(Pr)
-    return MMI.UnivariateFinite(classes_seen, Pr, pool=pool)
+    return MMI.UnivariateFinite(classes_seen, Pr)
 end
 
 metadata_model(
@@ -160,7 +161,7 @@ function _check_prob01(priors)
 end
 
 @inline function _check_lda_priors(priors::UnivariateFinite, classes_seen, pool)
-    if MMI.classes(priors) != pool
+    if CategoricalDistributions.levels(priors) != pool
         throw(
             ArgumentError(
                 "UnivariateFinite `priors` must have common pool with training target."
@@ -236,7 +237,7 @@ function MMI.fitted_params(::BayesianLDA, (core_res, classes_seen, pool,  priors
     return (
         classes = classes_seen,
         projection_matrix=MS.projection(core_res),
-        priors=MMI.UnivariateFinite(classes_seen, priors, pool=pool)
+        priors=MMI.UnivariateFinite(classes_seen, priors)
     )
 end
 
@@ -261,7 +262,7 @@ function MMI.predict(m::BayesianLDA, (core_res, classes_seen, pool, priors, n), 
 
     # apply a softmax transformation to convert Pr to a probability matrix
     softmax!(Pr)
-    return MMI.UnivariateFinite(classes_seen, Pr, pool=pool)
+    return MMI.UnivariateFinite(classes_seen, Pr)
 end
 
 function MMI.transform(m::T, (core_res, ), X) where T<:Union{LDA, BayesianLDA}
@@ -353,7 +354,7 @@ function MMI.predict(m::SubspaceLDA, (core_res, outdim, classes_seen, pool), Xne
     Pr .*= -1
     # apply a softmax transformation
     softmax!(Pr)
-    return MMI.UnivariateFinite(classes_seen, Pr, pool=pool)
+    return MMI.UnivariateFinite(classes_seen, Pr)
 end
 
 metadata_model(
@@ -430,7 +431,7 @@ function MMI.fitted_params(
   return (
       classes = classes_seen,
       projection_matrix=core_res.projw * view(core_res.projLDA, :, 1:outdim),
-      priors=MMI.UnivariateFinite(classes_seen, priors, pool=pool)
+      priors=MMI.UnivariateFinite(classes_seen, priors)
   )
 end
 
@@ -470,7 +471,7 @@ function MMI.predict(
 
     # apply a softmax transformation to convert Pr to a probability matrix
     softmax!(Pr)
-    return MMI.UnivariateFinite(classes_seen, Pr, pool=pool)
+    return MMI.UnivariateFinite(classes_seen, Pr)
 end
 
 function MMI.transform(
@@ -724,7 +725,8 @@ The fields of `fitted_params(mach)` are:
   section below).
 
 - `priors`: The class priors for classification. As inferred from training target `y`, if
-  not user-specified. A `UnivariateFinite` object with levels consistent with `levels(y)`.
+  not user-specified. A `UnivariateFinite` object with levels (classes) consistent with
+  `levels(y)`.
 
 # Report
 
@@ -954,7 +956,8 @@ The fields of `fitted_params(mach)` are:
   section below).
 
 - `priors`: The class priors for classification. As inferred from training target `y`, if
-  not user-specified. A `UnivariateFinite` object with levels consistent with `levels(y)`.
+  not user-specified. A `UnivariateFinite` object with levels (classes) consistent with
+  `levels(y)`.
 
 # Report
 

@@ -2,9 +2,11 @@ import Dates
 import MLJMultivariateStatsInterface: _replace!
 import MultivariateStats
 import Random
+import CategoricalDistributions.levels
 
 using LinearAlgebra
 using MLJBase
+using StatisticalMeasures
 using MLJMultivariateStatsInterface
 using StableRNGs
 using Test
